@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .hero-gradient { background: linear-gradient(rgba(11, 79, 47, 0.8), rgba(0, 0, 0, 0.7)); }
+    </style>
+
+    <title>Projects | Rahmat-e-Islam Foundation</title>
+</head>
+<body class="bg-gray-50">
+    
+<nav class="bg-[#0b4f2f] text-white sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <a href="index.html" class="flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-full bg-white object-cover">
+            <span class="font-bold text-lg tracking-wide uppercase">रहमत-ए-इस्लाम</span>
+        </a>
+        <div class="hidden md:flex gap-6 font-medium">
+            <a href="index.html" class="hover:text-green-300 transition">होम</a>
+            <a href="about.html" class="hover:text-green-300 transition">हमारे बारे में</a>
+            <a href="projects.html" class="hover:text-green-300 transition">प्रोजेक्ट्स</a>
+            <a href="donate.html" class="bg-yellow-500 px-4 py-1 rounded-full text-green-900 font-bold hover:bg-yellow-400 transition">इमदाद दें</a>
+        </div>
+        <button class="md:hidden text-2xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-[#083b23] px-4 py-4 space-y-3">
+        <a href="index.html" class="block hover:text-green-300">होम</a>
+        <a href="about.html" class="block hover:text-green-300">हमारे बारे में</a>
+        <a href="projects.html" class="block hover:text-green-300">प्रोजेक्ट्स</a>
+        <a href="donate.html" class="block text-yellow-500 font-bold">इमदाद दें</a>
+    </div>
+</nav>
+
+    <header class="bg-[#0b4f2f] py-20 text-white text-center">
+        <h1 class="text-4xl font-bold mb-2">हमारे प्रोजेक्ट्स</h1>
+        <p class="text-green-200">अल्लाह की राह में खिदमत-ए-खल्क के कार्य</p>
+    </header>
+
+    <section class="py-20 container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-3xl overflow-hidden shadow-lg group">
+                <div class="h-64 bg-gray-300 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute top-4 left-4 bg-green-600 text-white px-4 py-1 rounded-full text-xs font-bold">मासिक प्रोजेक्ट</div>
+                </div>
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold text-green-900 mb-3">राशन वितरण (Monthly Ration)</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">हर महीने लंकापुरी और आस-पास के इलाकों के विधवा, यतीम और गरीब परिवारों को राशन किट दी जाती है जिसमें आटा, चावल, तेल और अन्य बुनियादी चीज़ें होती हैं।</p>
+                    <a href="donate.html" class="text-green-700 font-bold hover:underline">इस प्रोजेक्ट में मदद करें →</a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl overflow-hidden shadow-lg group">
+                <div class="h-64 bg-gray-300 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=2070" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute top-4 left-4 bg-red-600 text-white px-4 py-1 rounded-full text-xs font-bold">आपातकालीन</div>
+                </div>
+                <div class="p-8">
+                    <h3 class="text-2xl font-bold text-green-900 mb-3">चिकित्सा सहायता (Medical Aid)</h3>
+                    <p class="text-gray-600 mb-6 leading-relaxed">गंभीर बीमारी या ऑपरेशन के समय ऐसे परिवारों की मदद की जाती है जो अस्पताल का खर्च वहन नहीं कर सकते। हम सीधे अस्पताल में बिल भुगतान या दवाइयों का इंतज़ाम करते हैं।</p>
+                    <a href="donate.html" class="text-green-700 font-bold hover:underline">किसी की जान बचाने में मदद करें →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+<footer class="bg-gray-900 text-white py-12 mt-20">
+    <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div>
+            <h2 class="text-xl font-bold text-green-400 mb-4 uppercase">रहमत-ए-इस्लाम फाउंडेशन</h2>
+            <p class="text-gray-400 text-sm leading-relaxed">मदद अल्लाह की तरफ़ से। लंकापुरी शास्त्री नगर, जयपुर स्थित एक सामाजिक और इंसानी खिदमत करने वाला संगठन।</p>
+        </div>
+        <div>
+            <h3 class="text-lg font-semibold mb-4 text-white">क्विक लिंक्स</h3>
+            <ul class="text-gray-400 text-sm space-y-2">
+                <li><a href="index.html" class="hover:text-white transition">होम</a></li>
+                <li><a href="about.html" class="hover:text-white transition">हमारे बारे में</a></li>
+                <li><a href="projects.html" class="hover:text-white transition">प्रोजेक्ट्स</a></li>
+                <li><a href="donate.html" class="hover:text-white transition">इमदाद दें</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="text-lg font-semibold mb-4 text-white">संपर्क करें</h3>
+            <p class="text-gray-400 text-sm mb-2"><i class="fa-solid fa-location-dot mr-2 text-green-500"></i> लंकापुरी शास्त्री नगर, जयपुर</p>
+            <p class="text-gray-400 text-sm mb-2"><i class="fa-solid fa-phone mr-2 text-green-500"></i> +91 7976729458</p>
+            <p class="text-gray-400 text-sm mb-4"><i class="fa-solid fa-envelope mr-2 text-green-500"></i> rahmat.e.islam.foundation@gmail.com</p>
+            <div class="flex gap-4">
+                <a href="https://wa.me/917976729458" class="bg-green-600 w-10 h-10 rounded-full flex items-center justify-center hover:bg-green-700 transition"><i class="fa-brands fa-whatsapp text-xl"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-10 pt-6 border-t border-gray-800 text-xs text-gray-500">
+        © 2026 Rahmat-e-Islam Foundation. Developed with sincerity.
+    </div>
+</footer>
+
+</body>
+</html>
