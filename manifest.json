@@ -2,16 +2,22 @@
   "name": "Rahmat-e-Islam Foundation",
   "short_name": "Rahmat Foundation",
   "description": "रहमत-ए-इस्लाम फाउंडेशन - जयपुर शास्त्री नगर की पारदर्शी संस्था। चंदे का लाइव हिसाब और मासिक राशन वितरण की रिपोर्ट्स।",
+
   "id": "com.rahmateislam.foundation",
-  "start_url": "./index.html",
-  "scope": "./",
+
+  "start_url": "/rahmat-foundation/index.html",
+  "scope": "/rahmat-foundation/",
+
   "display": "standalone",
+
   "display_override": [
     "standalone",
     "window-controls-overlay"
   ],
+
   "background_color": "#15803d",
   "theme_color": "#15803d",
+
   "orientation": "portrait",
   "lang": "hi",
 
@@ -35,13 +41,52 @@
       "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "./screenshot-1-home.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshot-2-donations.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshot-3-ration-report.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshot-4-admin-panel.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshot-5-monthly-report.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshot-6-about.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ],
 
