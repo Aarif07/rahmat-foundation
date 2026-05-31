@@ -3,7 +3,7 @@
   "short_name": "Rahmat Foundation",
   "description": "रहमत-ए-इस्लाम फाउंडेशन - जयपुर शास्त्री नगर की पारदर्शी संस्था। चंदे का लाइव हिसाब और मासिक राशन वितरण की रिपोर्ट्स।",
 
-  "id": "com.rahmateislam.foundation",
+  "id": "com.rahmateislam.foundation.v2",
 
   "start_url": "/rahmat-foundation/index.html",
   "scope": "/rahmat-foundation/",
