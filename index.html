@@ -648,6 +648,60 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => { loadUser(); });
+    // Android Back Button & Exit Popup Control Logic
+(function() {
+    let backPressCount = 0;
+    
+    // Push a dummy state to history to capture the first back click
+    window.history.pushState({ page: "exit_guard" }, "");
+    
+    window.addEventListener("popstate", function(event) {
+        // If user tries to go back, open the exit popup instead of closing app
+        let modal = document.getElementById("exitPopupModal");
+        if (modal) {
+            modal.classList.remove("hidden");
+            setTimeout(() => {
+                modal.classList.remove("opacity-0");
+                modal.querySelector('div').classList.remove("scale-95");
+            }, 10);
+            
+            // Keep the user on the same page structure till they choose
+            window.history.pushState({ page: "exit_guard" }, "");
+        }
+    });
+
+    window.closeExitPopup = function(shouldExit) {
+        let modal = document.getElementById("exitPopupModal");
+        if (modal) {
+            modal.classList.add("opacity-0");
+            modal.querySelector('div').classList.add("scale-95");
+            setTimeout(() => modal.classList.add("hidden"), 300);
+        }
+        
+        if (shouldExit) {
+            // This triggers native closing behavior inside Android TWA apps
+            navigator.app ? navigator.app.exitApp() : window.close();
+        }
+    };
+})();
     </script>
+    <!-- Modern Exit Popup Modal -->
+<div id="exitPopupModal" class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-300 border border-gray-100 dark:border-gray-700 text-center">
+        <div class="w-16 h-16 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-pulse">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">एप्लिकेशन बंद करें?</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">क्या आप वाकई रहमत-ए-इस्LAM फाउंडेशन ऐप से बाहर निकलना चाहते हैं?</p>
+        <div class="flex gap-3">
+            <button onclick="closeExitPopup(false)" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold p-3 rounded-xl text-xs active:scale-95 transition-transform">
+                नहीं, रुकें
+            </button>
+            <button onclick="closeExitPopup(true)" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-xl text-xs shadow-md active:scale-95 transition-transform">
+                हाँ, बाहर जाएँ
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
