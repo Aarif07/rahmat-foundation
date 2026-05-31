@@ -1,8 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.rahmateislam.foundation.v2",
-        "sha256_cert_fingerprints": ["96:0B:03:70:21:99:65:FA:59:B1:29:D3:AB:D3:7E:61:0A:A3:72:5F:66:3D:1C:93:76:55:CB:BB:2F:C9:81:A1"]
-      }
-    }]
