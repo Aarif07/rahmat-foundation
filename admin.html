@@ -23,6 +23,7 @@
     <script>tailwind.config={darkMode:'class'}</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body { overscroll-behavior-y: contain; }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
         #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #15803d; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.4s ease; z-index: 9999; }
@@ -937,5 +938,13 @@ ${kitItems}
             if(document.getElementById("expense")) document.getElementById("expense").value = liveState.expense || 0;
         });
     </script>
+    // Admin Back Button Logic to return to home screen instead of closing app
+(function() {
+    window.history.pushState({ page: "admin_view" }, "");
+    window.addEventListener("popstate", function(event) {
+        window.location.href = "index.html";
+    });
+})();
+</script>
 </body>
 </html>
