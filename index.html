@@ -648,60 +648,104 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => { loadUser(); });
-    // Android Back Button & Exit Popup Control Logic
-(function() {
-    let backPressCount = 0;
-    
-    // Push a dummy state to history to capture the first back click
-    window.history.pushState({ page: "exit_guard" }, "");
-    
-    window.addEventListener("popstate", function(event) {
-        // If user tries to go back, open the exit popup instead of closing app
-        let modal = document.getElementById("exitPopupModal");
-        if (modal) {
-            modal.classList.remove("hidden");
-            setTimeout(() => {
-                modal.classList.remove("opacity-0");
-                modal.querySelector('div').classList.remove("scale-95");
-            }, 10);
-            
-            // Keep the user on the same page structure till they choose
-            window.history.pushState({ page: "exit_guard" }, "");
-        }
-    });
 
-    window.closeExitPopup = function(shouldExit) {
-        let modal = document.getElementById("exitPopupModal");
-        if (modal) {
-            modal.classList.add("opacity-0");
-            modal.querySelector('div').classList.add("scale-95");
-            setTimeout(() => modal.classList.add("hidden"), 300);
+    // ── Back Navigation System ──────────────────────────────────────────────
+    (function() {
+
+        var tabHistory = ['sect-home'];
+        var tabBtnMap = {
+            'sect-home':   0,
+            'sect-latest': 1,
+            'sect-team':   2,
+            'sect-about':  3
+        };
+        var popupOpen = false;
+
+        // Wrap switchUserTab to record actual navigation history
+        var _orig = window.switchUserTab || switchUserTab;
+        window.switchUserTab = function(tabId, el) {
+            _orig(tabId, el);
+            if (tabHistory[tabHistory.length - 1] !== tabId) {
+                tabHistory.push(tabId);
+            }
+        };
+
+        function handleBack() {
+            // If popup is open, close it on back
+            if (popupOpen) {
+                closeExitPopup(false);
+                return;
+            }
+            if (tabHistory.length > 1) {
+                tabHistory.pop();
+                var prevId = tabHistory[tabHistory.length - 1];
+                var btns = document.querySelectorAll('.user-nav-btn');
+                var idx = tabBtnMap[prevId];
+                if (idx !== undefined && btns[idx]) {
+                    _orig(prevId, btns[idx]);
+                }
+            } else {
+                showExitPopup();
+            }
         }
-        
-        if (shouldExit) {
-            // This triggers native closing behavior inside Android TWA apps
-            navigator.app ? navigator.app.exitApp() : window.close();
+
+        function showExitPopup() {
+            var modal = document.getElementById('exitPopupModal');
+            if (!modal) return;
+            popupOpen = true;
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.style.opacity = '1';
+                modal.querySelector('.popup-inner').style.transform = 'scale(1)';
+            }, 10);
         }
-    };
-})();
+
+        window.closeExitPopup = function(shouldExit) {
+            var modal = document.getElementById('exitPopupModal');
+            if (modal) {
+                popupOpen = false;
+                modal.style.opacity = '0';
+                modal.querySelector('.popup-inner').style.transform = 'scale(0.88)';
+                setTimeout(function() { modal.style.display = 'none'; }, 260);
+            }
+            if (shouldExit) {
+                if (navigator.app && navigator.app.exitApp) {
+                    navigator.app.exitApp();
+                } else {
+                    window.close();
+                }
+            }
+        };
+
+        // ── Android TWA / Cordova backbutton event ──
+        document.addEventListener('backbutton', function(e) {
+            e.preventDefault();
+            handleBack();
+        }, false);
+
+        // ── Browser / HTML viewer: intercept popstate ──
+        // Push TWO dummy states so we always have a buffer to catch popstate
+        window.history.pushState({ g: 1 }, '');
+        window.history.pushState({ g: 2 }, '');
+
+        window.addEventListener('popstate', function(e) {
+            // Re-fill the buffer immediately to catch next press too
+            window.history.pushState({ g: 1 }, '');
+            window.history.pushState({ g: 2 }, '');
+            handleBack();
+        });
+
+    })();
     </script>
-    <!-- Modern Exit Popup Modal -->
-<div id="exitPopupModal" class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-transform duration-300 border border-gray-100 dark:border-gray-700 text-center">
-        <div class="w-16 h-16 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 animate-pulse">
-            <i class="fa-solid fa-circle-exclamation"></i>
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">एप्लिकेशन बंद करें?</h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">क्या आप वाकई रहमत-ए-इस्LAM फाउंडेशन ऐप से बाहर निकलना चाहते हैं?</p>
-        <div class="flex gap-3">
-            <button onclick="closeExitPopup(false)" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold p-3 rounded-xl text-xs active:scale-95 transition-transform">
-                नहीं, रुकें
-            </button>
-            <button onclick="closeExitPopup(true)" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-xl text-xs shadow-md active:scale-95 transition-transform">
-                हाँ, बाहर जाएँ
-            </button>
+
+    <!-- Exit Popup -->
+    <div id="exitPopupModal" style="display:none;opacity:0;transition:opacity 0.22s ease;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:28px;">
+        <div class="popup-inner" style="transition:transform 0.22s ease;transform:scale(0.86);background:#ffffff;border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,0.25);width:100%;max-width:270px;padding:18px 18px 16px;">
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeExitPopup(false)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;letter-spacing:0.01em;">Cancel</button>
+                <button onclick="closeExitPopup(true)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;letter-spacing:0.01em;">Exit</button>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>

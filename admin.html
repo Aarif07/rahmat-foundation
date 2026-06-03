@@ -937,14 +937,59 @@ ${kitItems}
             if(document.getElementById("prev")) document.getElementById("prev").value = liveState.prev || 0;
             if(document.getElementById("expense")) document.getElementById("expense").value = liveState.expense || 0;
         });
+
+        // ── Back Navigation System ─────────────────────────────────────────
+        (function() {
+
+            var tabHistory = ['tab-home'];
+            var tabBtnMap = {
+                'tab-home':     0,
+                'tab-cases':    1,
+                'tab-report':   2,
+                'tab-history':  3,
+                'tab-ration':   4,
+                'tab-settings': 5
+            };
+
+            var _orig = window.switchTab || switchTab;
+            window.switchTab = function(id, el) {
+                _orig(id, el);
+                if (tabHistory[tabHistory.length - 1] !== id) {
+                    tabHistory.push(id);
+                }
+            };
+
+            function handleBack() {
+                if (tabHistory.length > 1) {
+                    tabHistory.pop();
+                    var prevId = tabHistory[tabHistory.length - 1];
+                    var btns = document.querySelectorAll('.nav-item');
+                    var idx = tabBtnMap[prevId];
+                    if (idx !== undefined && btns[idx]) {
+                        _orig(prevId, btns[idx]);
+                    }
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+
+            // Android TWA / Cordova
+            document.addEventListener('backbutton', function(e) {
+                e.preventDefault();
+                handleBack();
+            }, false);
+
+            // Browser / HTML viewer — push 2 buffer states
+            window.history.pushState({ g: 1 }, '');
+            window.history.pushState({ g: 2 }, '');
+
+            window.addEventListener('popstate', function() {
+                window.history.pushState({ g: 1 }, '');
+                window.history.pushState({ g: 2 }, '');
+                handleBack();
+            });
+
+        })();
     </script>
-    // Admin Back Button Logic to return to home screen instead of closing app
-(function() {
-    window.history.pushState({ page: "admin_view" }, "");
-    window.addEventListener("popstate", function(event) {
-        window.location.href = "index.html";
-    });
-})();
-</script>
 </body>
 </html>
