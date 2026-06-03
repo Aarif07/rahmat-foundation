@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="hi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahmat-e-Islam Foundation Admin</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b4f2f">
+    <link class="apple-touch-icon" href="logo.png">
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker Registered Successfully'))
+            .catch(err => console.log('Service Worker Setup Error', err));
+        });
+      }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={darkMode:'class'}</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html, body { overscroll-behavior-y: contain; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+        #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #15803d; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.4s ease; z-index: 9999; }
+        #toast.show { opacity: 1; bottom: 100px; }
+        .nav-item.active { color: #16a34a; font-weight: 700; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
+
+    <div id="loginScreen" class="fixed inset-0 bg-white/95 dark:bg-gray-900/95 z-[100] flex flex-col items-center justify-center">
+        <div class="text-center mb-8 flex flex-col items-center">
+            <img src="logo.png" onerror="this.src='Logo.png';" alt="Logo" class="w-24 h-24 mb-4 rounded-full shadow-md object-cover bg-white">
+            <h1 class="text-2xl font-bold text-green-800 dark:text-green-400">रहमत-ए-इस्लाम</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Foundation Admin Panel</p>
+        </div>
+        <div class="w-64">
+            <input type="password" id="pinInput" placeholder="अपना PIN डालें" class="w-full p-4 text-center text-xl font-bold tracking-[0.5em] bg-gray-100 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-green-500 mb-4">
+            <button onclick="loginAdmin()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded-xl font-bold text-lg shadow-lg active:scale-95 transition-transform">अनलॉक करें <i class="fa-solid fa-lock-open ml-2"></i></button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <header class="sticky top-0 z-50 bg-[#0b4f2f] text-white px-4 py-3 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-2">
+            <img src="logo.png" onerror="this.src='Logo.png';" class="w-8 h-8 rounded-full border border-white/30 object-cover bg-white">
+            <h1 class="text-[16px] font-bold tracking-wide">रहमत-ए-इस्लाम एडमिन</h1>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.location.href='index.html'" class="bg-slate-800 hover:bg-black text-white px-2.5 py-1 rounded-lg text-xs font-semibold"><i class="fa-solid fa-arrow-left"></i> User View</button>
+            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-white/10"><i id="themeIcon" class="fa-solid fa-moon text-lg"></i></button>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 mt-4">
+        <section id="tab-home" class="tab-content active">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-5">
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-file-pen text-green-600"></i> नई एंट्री दर्ज करें</h2>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">महीना</label>
+                            <input id="monthName" placeholder="जैसे: अप्रेल, मई" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-green-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-1 block">तारीख</label>
+                            <input id="date" type="date" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-green-500 text-sm dark:[color-scheme:dark]">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">रेंज (उदा: 11 अप्रेल से 15 मई)</label>
+                        <input id="rangeText" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-green-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">टाइप</label>
+                        <select id="type" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-green-500 text-sm bg-white dark:bg-gray-900">
+                            <option>सदक़ा - एक नेक नियत उम्मती</option>
+                            <option>ख़ैरात - एक नेक नियत उम्मती</option>
+                            <option>इमदाद - एक नेक नियत उम्मती</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">रकम ₹</label>
+                        <input id="amount" type="number" placeholder="रक़म ₹" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-green-500 text-sm font-bold">
+                    </div>
+                    <button onclick="addEntry()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded-lg font-bold text-sm shadow-md mt-2"><i class="fa-solid fa-plus-circle mr-1"></i> जोड़ें</button>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700"><h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-users text-green-600"></i> लाइव रिकॉर्ड प्रिव्यू</h2><div id="preview" class="space-y-3 max-h-[400px] overflow-y-auto"></div></div>
+        </section>
+
+        <section id="tab-cases" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-5">
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-home text-emerald-600"></i> नया केस/घर जोड़ें</h2>
+                <div class="space-y-3">
+                    <input id="caseName" type="text" placeholder="मुखिया का नाम" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg text-sm">
+                    <input id="caseMobile" type="number" placeholder="मोबाइल नंबर" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg text-sm">
+                    <input id="caseAddress" type="text" placeholder="पूरा पता" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg text-sm">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input id="caseMembers" type="number" placeholder="परिवार सदस्य संख्या" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg text-sm">
+                        <select id="caseTypeSelection" class="w-full p-2.5 bg-white dark:bg-gray-900 border rounded-lg text-sm outline-none">
+                            <option value="permanent">हर महीने राशन (Permanent Monthly)</option>
+                            <option value="temporary">कुछ महीने राशन (Temporary Multi-Month)</option>
+                            <option value="emergency">इमरजेंसी 1-बार राशन (Emergency 1-Time)</option>
+                            <option value="general">सामान्य केस (General Case)</option>
+                        </select>
+                    </div>
+                    <input id="caseProblem" type="text" placeholder="समस्या (जैसे: विधवा, बेसहारा, लाचार, बीमार)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg text-sm">
+                    <button onclick="addCase()" class="w-full bg-emerald-700 text-white font-bold p-2.5 rounded-lg text-sm shadow-md"><i class="fa-solid fa-user-plus"></i> नया केस सेव करें</button>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="mb-4">
+                    <label class="text-[11px] uppercase font-bold tracking-wider text-gray-400 block mb-1.5">केस केटेगरी अनुसार देखें:</label>
+                    <div class="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl text-[10px] font-bold">
+                        <button onclick="filterCasesByActiveCategory('all')" id="caseTab-all" class="flex-1 py-1.5 px-1 rounded-lg text-center bg-emerald-600 text-white shadow-sm transition-all">सब सूची</button>
+                        <button onclick="filterCasesByActiveCategory('permanent')" id="caseTab-permanent" class="flex-1 py-1.5 px-1 rounded-lg text-center text-gray-500">हर महीने</button>
+                        <button onclick="filterCasesByActiveCategory('temporary')" id="caseTab-temporary" class="flex-1 py-1.5 px-1 rounded-lg text-center text-gray-500">कुछ महीने</button>
+                        <button onclick="filterCasesByActiveCategory('emergency')" id="caseTab-emergency" class="flex-1 py-1.5 px-1 rounded-lg text-center text-gray-500">इमरजेंसी</button>
+                        <button onclick="filterCasesByActiveCategory('general')" id="caseTab-general" class="flex-1 py-1.5 px-1 rounded-lg text-center text-gray-500">सामान्य</button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center border-b pb-2 mb-3">
+                    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2"><i class="fa-solid fa-list-check text-emerald-600"></i> पंजीकृत परिवारों की सूची</h2>
+                    <span id="totalCasesCounterBadge" class="bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">0 घर</span>
+                </div>
+                <div id="casesListContainer" class="space-y-3 max-h-[500px] overflow-y-auto"></div>
+            </div>
+        </section>
+
+        <section id="tab-report" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-5">
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-file-invoice text-green-600"></i> रिपोर्ट और सेटलमेंट</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-xs text-gray-500 block">पिछला बैलेंस ₹</label>
+                        <input id="prev" type="number" oninput="updateReportPreview()" placeholder="0" class="w-full p-2 mt-1 border-b-2 border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 font-bold outline-none text-center rounded">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 block">कुल खर्च ₹</label>
+                        <input id="expense" type="number" oninput="updateReportPreview()" placeholder="0" class="w-full p-2 mt-1 border-b-2 border-red-400 bg-red-50 dark:bg-red-900/30 text-red-600 font-bold outline-none text-center rounded">
+                    </div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4 space-y-2 text-sm border border-green-100 dark:border-green-900/50">
+                    <div class="flex justify-between"><span>कुल आमदनी</span><strong id="preview-income" class="text-green-700">₹ 0</strong></div>
+                    <div class="flex justify-between"><span>कुल बचत (बैलेंस)</span><strong id="preview-saving" class="text-green-700">₹ 0</strong></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="generateReport()" class="bg-[#25D366] hover:bg-[#1DA851] text-white p-2.5 rounded-lg text-sm font-bold shadow-sm flex justify-center items-center gap-2"><i class="fa-brands fa-whatsapp"></i> WhatsApp शेयर</button>
+                    <button onclick="finalSave()" class="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-lg text-sm font-bold shadow-sm flex justify-center items-center gap-2"><i class="fa-solid fa-folder-open"></i> Final Save</button>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden relative">
+                <div class="bg-green-100 dark:bg-green-900/50 text-green-800 text-center py-2 text-xs font-bold border-b">रिपोर्ट टेक्स्ट प्रीव्यू</div>
+                <div class="p-5 text-sm space-y-3">
+                    <div class="text-center mb-4 flex flex-col items-center"><h3 class="font-bold">रहमत-ए-इस्लाम फाउंडेशन</h3><p class="text-[10px] text-gray-500">मदद अल्लाह की तरफ़ से</p></div>
+                    <div class="space-y-1">
+                        <p><b>महीना:</b> <span id="card-month">-</span></p>
+                        <p><b>रेंज:</b> <span id="card-range">-</span></p>
+                    </div>
+                    <div class="border-t border-dashed my-3 py-2 space-y-2">
+                        <div class="flex justify-between"><span>पिछले महीने का बैलेंस:</span><span id="card-prev" class="font-bold text-gray-800 dark:text-gray-200">₹ 0</span></div>
+                        <div class="flex justify-between"><span>इस बार जमा रकम:</span><span id="card-income" class="font-bold text-green-600">₹ 0</span></div>
+                        <div class="flex justify-between text-red-600"><span>कुल खर्च:</span><span id="card-expense" class="font-bold">₹ 0</span></div>
+                        <div class="flex justify-between font-bold text-green-700 pt-1 border-t mt-1 text-base"><span>कुल बची रक़म:</span><span id="card-saving">₹ 0</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-history" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 flex items-center px-3 py-2 rounded-xl mb-4 border dark:border-gray-700"><i class="fa-solid fa-magnifying-glass text-gray-400 mr-2"></i><input type="text" id="historySearch" onkeyup="renderHistory()" placeholder="सर्च करें..." class="w-full bg-transparent outline-none text-sm"></div>
+            <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1 mb-4 text-sm font-semibold">
+                <button onclick="switchHistoryTab('donation')" id="btn-hist-donation" class="flex-1 py-2 rounded-md bg-green-600 text-white shadow text-center transition-all">डोनेशन हिसाब</button>
+                <button onclick="switchHistoryTab('ration')" id="btn-hist-ration" class="flex-1 py-2 rounded-md text-gray-600 dark:text-gray-300 text-center transition-all">राशन हिसाब</button>
+            </div>
+            <div id="history-content" class="space-y-4"></div>
+        </section>
+
+        <section id="tab-ration" class="tab-content">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-5">
+                <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-cart-shopping text-green-600"></i> राशन खर्च सेक्शन</h2>
+                <div class="space-y-3">
+                    <input id="rationMonth" placeholder="महीना (जैसे: अप्रेल, मई)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm">
+                    <input id="rationTotal" type="number" placeholder="कुल राशन खर्च ₹ (जैसे: 9600)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm font-bold">
+                    <textarea id="rationItems" placeholder="सामान ख़रीदा विवरण...&#10;1. 3200/- आटा 100kg&#10;2. 1170/- चीनी 25kg" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm h-24 resize-none"></textarea>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input id="kitPrice" type="number" placeholder="1 किट कीमत ₹ (जैसे: 960)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm">
+                        <input id="totalKits" type="number" placeholder="कुल किट संख्या (जैसे: 10)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm">
+                    </div>
+                    <textarea id="kitItems" placeholder="1 किट में सामान विवरण...&#10;1. 320 ₹ आटा कट्टा 10kg&#10;2. 117 ₹ चीनी 2.5kg" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm h-24 resize-none"></textarea>
+                    <textarea id="rationPlaces" placeholder="इन जगहों पर राशन पहुंचाया...&#10;2 राशन किट - बिहारी टीबा कच्‍ची बस्‍ती&#10;3 राशन किट - quarter की तरफ़" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm h-24 resize-none"></textarea>
+                    
+                    <div class="grid grid-cols-2 gap-3.5 mt-2">
+                        <button onclick="shareRationReportOnly()" class="bg-orange-500 hover:bg-orange-600 text-slate-950 p-3 rounded-lg font-bold text-xs shadow-xs transition-all flex justify-center items-center gap-1.5">
+                            <i class="fa-brands fa-whatsapp text-sm"></i> केवल व्हाट्सएप शेयर
+                        </button>
+                        <button onclick="saveRationReportOnly()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-bold text-xs shadow-xs transition-all flex justify-center items-center gap-1.5">
+                            <i class="fa-solid fa-folder-plus text-sm"></i> इतिहास में सुरक्षित करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-settings" class="tab-content text-slate-800 dark:text-gray-100">
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4">
+                <h3 class="font-bold text-sm mb-1 flex items-center gap-2 text-amber-600"><i class="fa-solid fa-bullhorn"></i>  यूजर PANEL फ्लैश घोषणा / मैसेज</h3>
+                <textarea id="adminNoticeInput" placeholder="यहाँ नया संदेश टाइप करें..." class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm h-20 resize-none mb-3"></textarea>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="publishNotice(true)" class="bg-amber-500 hover:bg-amber-600 text-slate-950 p-2.5 rounded-lg text-xs font-bold shadow-xs"><i class="fa-solid fa-eye"></i> Show Announcement</button>
+                    <button onclick="publishNotice(false)" class="bg-red-600 hover:bg-red-700 text-white p-2.5 rounded-lg text-xs font-bold shadow-xs"><i class="fa-solid fa-eye-slash"></i> Hide Message</button>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 mb-4">
+                <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-share-nodes text-green-600"></i>  एप्लिकेशन शेयर हब</h3>
+                <button onclick="shareAdminApp()" class="w-full mt-2 bg-[#25D366] hover:bg-[#1DA851] text-white p-2.5 rounded-lg text-xs font-bold flex justify-center items-center gap-2 shadow-xs transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> व्हाट्सएप पर ऐप link share करें
+                </button>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 mb-4">
+                <h3 class="font-bold text-sm mb-3">डेटा Management</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportBackup()" class="bg-yellow-500 text-white p-2.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-export"></i> Backup Save</button>
+                    <label class="bg-green-600 text-white p-2.5 rounded-lg text-xs font-bold text-center cursor-pointer"><i class="fa-solid fa-file-import"></i> Restore Data<input type="file" id="importFile" onchange="importBackup(event)" class="hidden"></label>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4 space-y-3">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider"><i class="fa-solid fa-scale-balanced"></i> Disclaimer & Legal Protection</h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                    यह एप्लिकेशन केवल आंतरिक पारदर्शी ऑडिट और रिकॉर्ड मैनेजमेंट के लिए विकसित किया गया है। इसका उपयोग जनता से जबरन धन उगाही या किसी भी प्रकार के व्यावसायिक लाभ के लिए प्रतिबंधित है। एकत्रित सभी वित्तीय डेटा स्वैच्छिक योगदान पर आधारित है।
+                </p>
+                <div class="border-t border-dashed dark:border-gray-700 pt-3 text-center">
+                    <p class="text-[10px] text-gray-400 font-medium">&copy; 2026 Rahmat-e-Islam Foundation | All Rights Reserved</p>
+                    <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1 uppercase tracking-widest">Developed By Aarif Khan Pathan</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl border dark:border-gray-700 overflow-hidden mb-4">
+                <div onclick="changeAdminPin()" class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"><span>🔑 Admin PIN बदलें</span><i class="fa-solid fa-chevron-right text-gray-400"></i></div>
+                <div onclick="lockApp()" class="px-4 py-3 border-b dark:border-gray-700 flex justify-between items-center text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"><span>🔒 ऐप लॉक करें</span><i class="fa-solid fa-chevron-right text-gray-400"></i></div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t dark:border-gray-800 flex justify-around items-center h-16 z-50">
+        <button onclick="switchTab('tab-home', this)" class="nav-item active flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-house text-lg mb-0.5"></i><span class="text-[9px]">होम</span></button>
+        <button onclick="switchTab('tab-cases', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-people-roof text-lg mb-0.5"></i><span class="text-[9px]">केसेस</span></button>
+        <button onclick="switchTab('tab-report', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-file-invoice text-lg mb-0.5"></i><span class="text-[9px]">रिपोर्ट</span></button>
+        <button onclick="switchTab('tab-history', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-folder-open text-lg mb-0.5"></i><span class="text-[9px]">हिस्ट्री</span></button>
+        <button onclick="switchTab('tab-ration', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-cart-shopping text-lg mb-0.5"></i><span class="text-[9px]">राशन</span></button>
+        <button onclick="switchTab('tab-settings', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-gear text-lg mb-0.5"></i><span class="text-[9px]">सेटिंग</span></button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
+            authDomain: "rahmat-foundation.firebaseapp.com", 
+            projectId: "rahmat-foundation", 
+            storageBucket: "rahmat-foundation.firebasestorage.app", 
+            messagingSenderId: "1000128409503", 
+            appId: "1:1000128409503:web:94173d012d4aace1a7d7aa", 
+            measurementId: "G-J6PPRSZ6P6" 
+        };
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = initializeFirestore(app, {
+              localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+            });
+
+            async function syncToFirebaseCloud(noticeStateUpdate = null) {
+                try {
+                    let currentData = JSON.parse(localStorage.getItem("data") || "[]");
+                    let currentHistory = JSON.parse(localStorage.getItem("history") || "[]");
+                    let currentRationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+                    let currentCases = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+                    let adminLiveState = {
+                        prev: Number(document.getElementById("prev")?.value || 0),
+                        expense: Number(document.getElementById("expense")?.value || 0)
+                    };
+
+                    let flashState = noticeStateUpdate || JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}');
+
+                    await setDoc(doc(db, "cloudAppData", "masterRecord"), {
+                        data: currentData,
+                        history: currentHistory,
+                        rationHistory: currentRationHistory,
+                        foundationCases: currentCases,
+                        adminLiveState: adminLiveState,
+                        flashNoticeState: flashState,
+                        lastUpdated: new Date().toISOString()
+                    });
+                } catch(e) { console.log("Firebase sync caught offline."); }
+            }
+
+            async function loadFromFirebaseCloud() {
+                try {
+                    let docSnap = await getDoc(doc(db, "cloudAppData", "masterRecord"));
+                    if (docSnap.exists()) {
+                        let cloudData = docSnap.data();
+                        if(cloudData.data) localStorage.setItem("data", JSON.stringify(cloudData.data));
+                        if(cloudData.history) localStorage.setItem("history", JSON.stringify(cloudData.history));
+                        if(cloudData.rationHistory) localStorage.setItem("rationHistory", JSON.stringify(cloudData.rationHistory));
+                        if(cloudData.foundationCases) localStorage.setItem("foundationCases", JSON.stringify(cloudData.foundationCases));
+                        
+                        data = cloudData.data || [];
+                        history = cloudData.history || [];
+                        rationHistory = cloudData.rationHistory || [];
+                        casesList = cloudData.foundationCases || [];
+                        
+                        if(cloudData.adminLiveState) {
+                            if(document.getElementById("prev")) document.getElementById("prev").value = cloudData.adminLiveState.prev || 0;
+                            if(document.getElementById("expense")) document.getElementById("expense").value = cloudData.adminLiveState.expense || 0;
+                        }
+                        if(cloudData.flashNoticeState) {
+                            localStorage.setItem("flashNoticeState", JSON.stringify(cloudData.flashNoticeState));
+                            if(document.getElementById("adminNoticeInput")) document.getElementById("adminNoticeInput").value = cloudData.flashNoticeState.message || "";
+                        }
+                        
+                        renderPreview();
+                        renderCasesList();
+                        updateReportPreview();
+                    }
+                } catch(e) { console.log("Failsafe persistence triggered."); }
+            }
+
+            // REALTIME LIVE SYNC + CONFLICT PROTECTION
+            let lastCloudUpdate = null;
+
+            function mergeUniqueReports(localArr = [], cloudArr = []) {
+                let merged = [...localArr];
+                cloudArr.forEach(cloudItem => {
+                    let exists = merged.some(localItem =>
+                        (localItem.id && cloudItem.id && localItem.id === cloudItem.id) ||
+                        (localItem.date === cloudItem.date && localItem.report === cloudItem.report)
+                    );
+                    if (!exists) {
+                        merged.push(cloudItem);
+                    }
+                });
+                return merged;
+            }
+
+            function startRealtimeSync() {
+                try {
+                    const masterRef = doc(db, "cloudAppData", "masterRecord");
+                    onSnapshot(masterRef, (snapshot) => {
+                        if (!snapshot.exists()) return;
+                        const cloudData = snapshot.data();
+                        if (!cloudData) return;
+
+                        if (cloudData.lastUpdated && cloudData.lastUpdated === lastCloudUpdate) {
+                            return;
+                        }
+                        lastCloudUpdate = cloudData.lastUpdated || null;
+
+                        let localHistory = JSON.parse(localStorage.getItem("history") || "[]");
+                        let mergedHistory = mergeUniqueReports(localHistory, cloudData.history || []);
+                        localStorage.setItem("history", JSON.stringify(mergedHistory));
+                        history = mergedHistory;
+
+                        let localRation = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+                        let mergedRation = mergeUniqueReports(localRation, cloudData.rationHistory || []);
+                        localStorage.setItem("rationHistory", JSON.stringify(mergedRation));
+                        rationHistory = mergedRation;
+
+                        if (cloudData.data) {
+                            data = cloudData.data;
+                            localStorage.setItem("data", JSON.stringify(data));
+                        }
+
+                        if (cloudData.foundationCases) {
+                            casesList = cloudData.foundationCases;
+                            localStorage.setItem("foundationCases", JSON.stringify(casesList));
+                        }
+
+                        if (cloudData.adminLiveState) {
+                            localStorage.setItem("adminLiveState", JSON.stringify(cloudData.adminLiveState));
+                            if(document.getElementById("prev")) {
+                                document.getElementById("prev").value = cloudData.adminLiveState.prev || 0;
+                            }
+                            if(document.getElementById("expense")) {
+                                document.getElementById("expense").value = cloudData.adminLiveState.expense || 0;
+                            }
+                        }
+
+                        renderPreview();
+                        renderCasesList();
+
+                        if (typeof renderHistory === "function") {
+                            renderHistory();
+                        }
+                        if (typeof updateReportPreview === "function") {
+                            updateReportPreview();
+                        }
+                    });
+                } catch(syncError) {
+                    console.log("Realtime sync unavailable:", syncError);
+                }
+            }
+
+            window.syncToFirebaseCloud = syncToFirebaseCloud;
+            window.loadFromFirebaseCloud = loadFromFirebaseCloud;
+            window.startRealtimeSync = startRealtimeSync;
+            
+            if(sessionStorage.getItem('isUnlocked') === 'true') { loadFromFirebaseCloud(); startRealtimeSync(); }
+        } catch(moduleError) { console.log("Offline coupling coupled successfully."); }
+    </script>
+
+    <script>
+        let savedPin = localStorage.getItem('adminPin') || '7860';
+        let currentCasesActiveFilterTab = 'all';
+        let currentHistoryTab = 'donation';
+
+        if(sessionStorage.getItem('isUnlocked') !== 'true') { document.getElementById('loginScreen').classList.remove('hidden'); } 
+        else { document.getElementById('loginScreen').classList.add('hidden'); }
+
+        function loginAdmin() {
+            let input = document.getElementById('pinInput').value;
+            if(input === savedPin) {
+                sessionStorage.setItem('isUnlocked', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                showToast("✅ लॉगिन सफल");
+                if(window.loadFromFirebaseCloud) { window.loadFromFirebaseCloud(); if(window.startRealtimeSync) window.startRealtimeSync(); }
+                else { renderPreview(); renderCasesList(); }
+            } else { showToast("❌ गलत PIN"); document.getElementById('pinInput').value = ""; }
+        }
+
+        function lockApp() { sessionStorage.removeItem('isUnlocked'); location.reload(); }
+        function showToast(m) { let t = document.getElementById("toast"); t.innerText = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2000); }
+
+        let data = JSON.parse(localStorage.getItem("data") || "[]"); 
+        let history = JSON.parse(localStorage.getItem("history") || "[]"); 
+        let rationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+        let casesList = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+
+        function save() { 
+            localStorage.setItem("data", JSON.stringify(data)); 
+            localStorage.setItem("history", JSON.stringify(history)); 
+            localStorage.setItem("rationHistory", JSON.stringify(rationHistory)); 
+            localStorage.setItem("foundationCases", JSON.stringify(casesList)); 
+            if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
+        }
+
+        function addCase() {
+            let name = document.getElementById("caseName").value;
+            let mobile = document.getElementById("caseMobile").value;
+            let address = document.getElementById("caseAddress").value;
+            let members = document.getElementById("caseMembers").value;
+            let problem = document.getElementById("caseProblem").value;
+            let type = document.getElementById("caseTypeSelection").value;
+
+            if(!name || !address) return showToast("⚠️ मुखिया का नाम और पता आवश्यक है");
+
+            casesList.push({
+                id: 'case_' + Date.now(),
+                name: name,
+                mobile: mobile || 'N/A',
+                address: address,
+                members: members || '0',
+                problem: problem || 'N/A',
+                caseType: type || 'general',
+                logs: []
+            });
+
+            save();
+            renderCasesList();
+            
+            document.getElementById("caseName").value = '';
+            document.getElementById("caseMobile").value = '';
+            document.getElementById("caseAddress").value = '';
+            document.getElementById("caseMembers").value = '';
+            document.getElementById("caseProblem").value = '';
+            showToast("✅ नया केस सुरक्षित कर दिया गया");
+        }
+
+        function filterCasesByActiveCategory(tabType) {
+            currentCasesActiveFilterTab = tabType;
+            document.querySelectorAll('[id^="caseTab-"]').forEach(btn => {
+                btn.className = "flex-1 py-1.5 px-1 rounded-lg text-center text-gray-500";
+            });
+            document.getElementById(`caseTab-${tabType}`).className = "flex-1 py-1.5 px-1 rounded-lg text-center bg-emerald-600 text-white shadow-sm transition-all";
+            renderCasesList();
+        }
+
+        function renderCasesList() {
+            let container = document.getElementById("casesListContainer");
+            let counterBadge = document.getElementById("totalCasesCounterBadge");
+            if(!container) return;
+
+            let targetList = casesList.filter(item => {
+                if(currentCasesActiveFilterTab === 'all') return true;
+                return item.caseType === currentCasesActiveFilterTab;
+            });
+
+            if(counterBadge) counterBadge.innerText = `${targetList.length} घर`;
+
+            if(targetList.length === 0) {
+                container.innerHTML = '<p class="text-center text-xs text-gray-400 py-4">कोई रिकॉर्ड इस श्रेणी में उपलब्ध नहीं है।</p>';
+                return;
+            }
+
+            let categoryHeaders = {
+                permanent: "🟢 हर महीने राशन",
+                temporary: "🟡 कुछ महीने राशन",
+                emergency: "🔴 इमरजेंसी 1-बार",
+                general: "⚪ सामान्य केस"
+            };
+
+            let html = '';
+            targetList.forEach((c, index) => {
+                let primaryIndex = casesList.findIndex(originalItem => originalItem.id === c.id);
+                let logBadges = c.logs && c.logs.length > 0 ? c.logs.map((l, lIdx) => `
+                    <span onclick="modifySpecificRationLog(${primaryIndex}, ${lIdx})" class="cursor-pointer bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-green-200/40 inline-flex items-center gap-1 hover:bg-yellow-100 transition-all">
+                        ${l.month} (${l.date}) <i class="fa-solid fa-pen-to-square text-[8px] opacity-50"></i>
+                    </span>
+                `).join(' ') : '<span class="text-gray-400 text-[11px] italic">कोई राशन लॉग नहीं</span>';
+                
+                html += `
+                <div class="border dark:border-gray-700 rounded-xl p-3 bg-gray-50 dark:bg-gray-900/50 space-y-1.5">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[9px] font-black uppercase tracking-wider bg-white dark:bg-gray-800 px-2 py-0.5 rounded border mb-1.5 inline-block">${categoryHeaders[c.caseType || 'general']}</span>
+                            <h3 class="font-bold text-sm text-green-900 dark:text-green-400">${index + 1}. ${c.name}</h3>
+                            <p class="text-[11px] text-gray-500">📞 ${c.mobile} | 👥 सदस्य: ${c.members} | ⚠️ समस्या: ${c.problem}</p>
+                            <p class="text-xs text-gray-700 dark:text-gray-300 mt-1">📍 <b>पता:</b> ${c.address}</p>
+                        </div>
+                        <button onclick="deleteCase(${primaryIndex})" class="text-red-500 hover:text-red-700 p-1 text-xs">❌</button>
+                    </div>
+                    <div class="pt-2 border-t border-dashed dark:border-gray-800">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">राशन वितरण इतिहास (सुधार के लिए क्लिक करें):</p>
+                        <div class="flex flex-wrap gap-1 mb-2">${logBadges}</div>
+                        <button onclick="markRationDelivered(${primaryIndex})" class="bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 text-[10px] font-black uppercase px-2 py-1 rounded shadow-xs"><i class="fa-solid fa-box-open"></i> राशन दिया (Log Mark)</button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function markRationDelivered(index) {
+            let currentMonthSetting = document.getElementById("monthName").value || "";
+            let month = prompt("कृपया महीना डालें (उदा: अप्रेल, मई):", currentMonthSetting);
+            if(!month) return;
+            
+            let today = new Date();
+            let dateStr = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}`;
+            
+            if(!casesList[index].logs) casesList[index].logs = [];
+            casesList[index].logs.push({ month: month, date: dateStr });
+            
+            save();
+            renderCasesList();
+            showToast("📦 राशन वितरण लॉग मार्क कर दिया गया");
+        }
+
+        function modifySpecificRationLog(caseIdx, logIdx) {
+            let currentLogItem = casesList[caseIdx].logs[logIdx];
+            let selection = prompt(`राशन इतिहास लॉग संशोधन:\n\nलॉग विवरण: "${currentLogItem.month} (${currentLogItem.date})"\n\nमहीना बदलने के लिए 'EDIT' लिखें\nरिकॉर्ड मिटाने के लिए 'DELETE' लिखें:`, "EDIT");
+            
+            if(!selection) return;
+            let actionType = selection.trim().toUpperCase();
+
+            if(actionType === 'EDIT' || actionType === 'E') {
+                let updatedMonth = prompt("नया महीना विवरण दर्ज करें:", currentLogItem.month);
+                if(updatedMonth && updatedMonth.trim() !== "") {
+                    casesList[caseIdx].logs[logIdx].month = updatedMonth.trim();
+                    save();
+                    renderCasesList();
+                    showToast("✏️ महीना सफलतापूर्वक संशोधित हुआ");
+                }
+            } else if(actionType === 'DELETE' || actionType === 'D') {
+                if(confirm(`क्या आप वाकई "${currentLogItem.month}" का राशन लॉग मिटाना चाहते हैं?`)) {
+                    casesList[caseIdx].logs.splice(logIdx, 1);
+                    save();
+                    renderCasesList();
+                    showToast("🗑️ राशन वितरण लॉग हटा दिया गया");
+                }
+            }
+        }
+
+        function deleteCase(index) {
+            if(confirm("क्या आप इस केस को हमेशा के लिए डिलीट करना चाहते हैं?")) {
+                casesList.splice(index, 1);
+                save();
+                renderCasesList();
+                showToast("🗑️ केस डिलीट कर दिया गया");
+            }
+        }
+
+        function shareAdminApp() {
+            let appUrl = window.location.href.replace('admin.html', 'index.html');
+            let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन* 🌙\n\nजयपुर शास्त्री नगर की सबसे पारदर्शी संस्था। सभी प्रकार के मासिक राशन वितरण और लाइव चंदे के हिसाब-किताब के लिए नीचे लिंक पर क्लिक करके एप्लिकेशन खोलें:\n\n🔗 *ऐप लिंक:* ${appUrl}`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
+        }
+
+        function publishNotice(shouldShow) {
+            let msg = document.getElementById("adminNoticeInput").value;
+            if(shouldShow && msg.trim() === "") return showToast("⚠️ पहले कोई संदेश टाइप करें");
+            
+            let noticeState = { visible: shouldShow, message: msg };
+            localStorage.setItem("flashNoticeState", JSON.stringify(noticeState));
+            if(window.syncToFirebaseCloud) {
+                window.syncToFirebaseCloud(noticeState);
+                showToast(shouldShow ? "📢 अनाउंसमेंट लाइव हो गया" : "🛑 अनाउंसमेंट हटा दिया गया");
+            } else { showToast("✅ लोकल बैकअप अपडेटेड (ऑफलाइन)"); }
+        }
+
+        function addEntry() {
+            let d = document.getElementById("date").value; 
+            let t = document.getElementById("type").value; 
+            let a = Number(document.getElementById("amount").value);
+            if(!d || !a) return showToast("⚠️ पूरी जानकारी भरें");
+            data.push({ date: d, type: t, amount: a }); save();
+            renderPreview(); 
+            updateReportPreview();
+            document.getElementById("amount").value = ""; 
+            showToast("✅ एंट्री हो गई");
+        }
+
+        function formatFullDate(d){ let x = new Date(d); return `${String(x.getDate()).padStart(2,'0')}/${String(x.getMonth()+1).padStart(2,'0')}/${String(x.getFullYear()).slice(-2)}`; }
+        
+        function formatShortDate(d){ 
+            let x = new Date(d); 
+            let months = ["जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]; 
+            return `${x.getDate()} ${months[x.getMonth()]}`; 
+        }
+
+        function renderPreview() {
+            let byDate = {}; let html = "";
+            data.forEach((e,i)=>{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push({ ...e, index:i }); });
+            Object.keys(byDate).sort().forEach(date=>{
+                let sum = 0; byDate[date].forEach(e => sum += e.amount);
+                html += `<div class="mb-3 border-b dark:border-gray-700 pb-3"><b class="text-green-800 dark:text-green-400 text-[15px]">${formatFullDate(date)}... ${sum} ₹</b><br>`;
+                byDate[date].forEach(e=>{
+                    html += `<div class="flex justify-between items-center py-1"><span class="text-gray-700 dark:text-gray-300 text-sm">${e.amount} ₹ ${e.type}</span><div class="space-x-1"><button onclick="editEntry(${e.index})" class="text-blue-500 bg-blue-50 px-2 py-1 rounded text-xs">✏️</button><button onclick="deleteEntry(${e.index})" class="text-red-500 bg-red-50 px-2 py-1 rounded text-xs">❌</button></div></div>`;
+                });
+                html += `</div>`;
+            });
+            document.getElementById("preview").innerHTML = html || '<p class="text-center text-xs text-gray-400 py-4">कोई डेटा नहीं है</p>';
+        }
+
+        function editEntry(i){ let val = prompt("नई रकम डालें", data[i].amount); if(val){ data[i].amount = Number(val); save(); renderPreview(); updateReportPreview(); showToast("✅ अपडेट हो गई"); } }
+        function deleteEntry(i) { if(confirm("Delete करें?")) { data.splice(i, 1); save(); renderPreview(); updateReportPreview(); showToast("✅ डिलीट हो गई"); } }
+
+        function updateReportPreview() {
+            let totalIncome = data.reduce((acc, curr) => acc + curr.amount, 0); 
+            let prev = Number(document.getElementById("prev").value || 0); 
+            let exp = Number(document.getElementById("expense").value || 0);
+            let balance = (totalIncome + prev) - exp;
+            
+            if(document.getElementById("preview-income")) document.getElementById("preview-income").innerText = `₹ ${totalIncome}`; 
+            if(document.getElementById("preview-saving")) document.getElementById("preview-saving").innerText = `₹ ${balance}`;
+            if(document.getElementById("card-month")) document.getElementById("card-month").innerText = document.getElementById("monthName").value || "-"; 
+            if(document.getElementById("card-range")) document.getElementById("card-range").innerText = document.getElementById("rangeText").value || "-";
+            if(document.getElementById("card-prev")) document.getElementById("card-prev").innerText = `₹ ${prev}`; 
+            if(document.getElementById("card-income")) document.getElementById("card-income").innerText = `₹ ${totalIncome}`;
+            if(document.getElementById("card-expense")) document.getElementById("card-expense").innerText = `₹ ${exp}`; 
+            if(document.getElementById("card-saving")) document.getElementById("card-saving").innerText = `₹ ${balance}`;
+            
+            localStorage.setItem("adminLiveState", JSON.stringify({prev: prev, expense: exp}));
+        }
+
+        function buildReport() {
+            let monthName = document.getElementById("monthName").value || ""; 
+            let range = document.getElementById("rangeText").value || ""; 
+            let prev = Number(document.getElementById("prev").value || 0); 
+            let exp = Number(document.getElementById("expense").value || 0);
+            let byDate = {}; let total = 0; let lastDateStr = "";
+            
+            data.forEach(e=>{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+            let sortedDates = Object.keys(byDate).sort();
+            
+            if(sortedDates.length) {
+                let latestDateObj = new Date(sortedDates[sortedDates.length - 1]);
+                let monthsList = ["जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"];
+                lastDateStr = `${latestDateObj.getDate()} ${monthsList[latestDateObj.getMonth()]}`;
+            } else {
+                lastDateStr = range ? range.split('से')[1]?.trim() || "तय तिथि" : "तय तिथि";
+            }
+
+            let text = `*रहमत-ए-इस्लाम फाउंडेशन*\n_मदद अल्लाह की तरफ़ से_\n*(लंकापुरी शास्त्री नगर जयपुर)*\n\n*\`महीना - ${monthName}\`*\n*${range} तक आई इमदाद जिसकी डिटेल यहाँ आपके साथ शेयर कर रहा हूं .*\n\n`;
+            
+            sortedDates.forEach(date=>{
+                let sum = 0; byDate[date].forEach(e => sum += e.amount); total += sum;
+                text += `${formatFullDate(date)}... ${sum}\n`;
+                byDate[date].forEach(e=>{ text += `${e.amount} ₹ ${e.type}\n`; });
+                text += `\n`;
+            });
+            
+            let final = total + prev; let balance = final - exp;
+            
+            text += `━━━━━━━━━━━━━━━━━\n*${lastDateStr} तक जमा रक़म = ${total}/-*\n*पिछले महीने तक जमा बची रक़म = ${prev}/-*\n\n*अल्हम्दुलिल्लाह*\n*${lastDateStr} तक सब मिलाकर जमा रक़म = ${final}/-*\n*इस महीने मे राशन का कुल खर्च हुआ = ${exp}/-*\n*${lastDateStr} तक कुल बची रक़म = ${balance}/-*\n\n*अल्लाह 'रहमत ए इस्लाम फाउंडेशन' परिवार के सभी साथियों की हिफाज़त फरमाये। उनके कारोबार में तरक्की अता करें और उन्हें हर मुसीबत से मेहफूज रखे। अल्लाह 'रहमत ए इस्लाम फाउंडेशन' के सभी साथियों को इस नेक काम के बदले बेहतर इनामात से नवाज़े। अल्लाह हम सब को ऐसे ही इस नेक काम में लगाये रखे। आमीन.*`;
+            return text;
+        }
+
+        function generateReport() { window.open("https://wa.me/?text=" + encodeURIComponent(buildReport()), '_blank'); }
+        
+        function finalSave() {
+            try {
+                const monthField = document.getElementById("monthName");
+                const rangeField = document.getElementById("rangeText");
+
+                const monthName = monthField ? monthField.value.trim() : "";
+                const rangeName = rangeField ? rangeField.value.trim() : "";
+                const prevVal = Number(document.getElementById("prev").value || 0);
+
+                if (data.length === 0 && prevVal === 0) {
+                    showToast("⚠️ सेव करने के लिए कोई डेटा नहीं है");
+                    return;
+                }
+
+                const reportText = buildReport();
+                if (!reportText || reportText.trim() === "") {
+                    showToast("❌ रिपोर्ट जनरेट नहीं हो सकी");
+                    return;
+                }
+
+                let existingHistory = JSON.parse(localStorage.getItem("history") || "[]");
+                if (!Array.isArray(existingHistory)) {
+                    existingHistory = [];
+                }
+
+                const reportItem = {
+                    id: "report_" + Date.now(),
+                    date: new Date().toLocaleString("hi-IN"),
+                    month: monthName,
+                    range: rangeName,
+                    report: reportText
+                };
+
+                existingHistory.unshift(reportItem);
+                history = existingHistory;
+                localStorage.setItem("history", JSON.stringify(existingHistory));
+
+                data = [];
+                localStorage.setItem("data", JSON.stringify(data));
+
+                save();
+
+                renderPreview();
+                renderHistory();
+                updateReportPreview();
+
+                currentHistoryTab = 'donation';
+                showToast("✅ Final Report History में Save हो गई");
+            } catch (err) {
+                console.log("FINAL SAVE ERROR:", err);
+                alert("Final Save Error: " + err.message);
+                showToast("❌ Final Save Failed");
+            }
+        }
+
+        function shareRationReportOnly() {
+            let totalKits = document.getElementById("totalKits").value || "0";
+            let total = Number(document.getElementById("rationTotal").value || 0).toLocaleString('en-IN');
+            let kitPrice = Number(document.getElementById("kitPrice").value || 0).toLocaleString('en-IN');
+            let kitItems = document.getElementById("kitItems").value || "";
+            let places = document.getElementById("rationPlaces").value || "";
+
+            if(!totalKits || !total || !kitPrice) return showToast("⚠️ पहले राशन जानकारी भरें");
+
+            let today = new Date();
+            let dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+
+            let report = `*रहमत-ए-इस्लाम फाउंडेशन*
+    मदद अल्लाह की तरफ़ से 
+   लंकापुरी शास्त्री नगर जयपुर
+
+*अस्सलाम अलैकुम वरहमतुल्लाही व बराकातहू.*
+*${dateText} - को ${totalKits} राशन किट बांटी गई है.*
+
+*1 राशन किट कुल लागत - ₹ ${kitPrice}/-*
+*${totalKits} राशन किट का कुल खर्चा हुआ - ₹ ${total}/-*
+*1 किट में सामान है.......*
+${kitItems}
+
+*आप सभी से गुजारिश है कि जितना हो सके उतना ज्यादा से ज्यादा सदक़ा, ख़ैरात, इमदाद करें. ताकि आने वाले महीने में ज्यादा से ज्यादा लोगों तक मदद पहुंचाई जाए.*
+
+*ईन जगहों पर राशन किट पहुंचाई..* ${places}
+
+*अल्हम्दुलिल्लाह*
+*अल्लाह का शुक्र है कि अल्लाह ने हमें इस रहमत वाले काम को करने की तौफ़िक दी और इसके क़ाबिल बनाया* *अल्लाह 'रहमत ए इस्लाम फाउंडेशन' परिवार के सभी साथियों की हिफाज़त फरमाये। उनके कारोबार में तरक्की अता करें और उन्हें हर मुसीबत से मेहफूज रखे। अल्लाह 'रहमत ए इस्लाम फाउंडेशन' के सभी साथियों को इस नेक काम के बदले बेहतर इनामात से नवाज़े। अल्लाह हम सब को ऐसे ही इस नेक काम में लगाये रखे। आमीन.*`;
+
+            window.open("https://wa.me/?text=" + encodeURIComponent(report), '_blank');
+            showToast("📲 व्हाट्सएप शेयर ओपन हो गया");
+        }
+
+        function saveRationReportOnly() {
+            let totalKits = document.getElementById("totalKits").value || "0";
+            let total = Number(document.getElementById("rationTotal").value || 0).toLocaleString('en-IN');
+            let kitPrice = Number(document.getElementById("kitPrice").value || 0).toLocaleString('en-IN');
+            let kitItems = document.getElementById("kitItems").value || "";
+            let places = document.getElementById("rationPlaces").value || "";
+
+            if(!totalKits || !total || !kitPrice) return showToast("⚠️ जानकारी खाली है");
+
+            let today = new Date();
+            let dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+
+            let report = `*रहमत-ए-इस्लाम फाउंडेशन*
+    मदद अल्लाह की तरफ़ से 
+   लंकापुरी शास्त्री नगर जयपुर
+
+*अस्सलाम अलैकुम वरहमतुल्लाही व बराकातहू.*
+*${dateText} - को ${totalKits} राशन किट बांटी गई है.*
+
+*1 राशन किट कुल लागत - ₹ ${kitPrice}/-*
+*${totalKits} राशन किट का कुल खर्चा हुआ - ₹ ${total}/-*
+*1 किट में सामान है.......*
+${kitItems}
+
+*आप सभी से गुजारिश है कि जितना हो सके उतना ज्यादा से ज्यादा सदक़ा, ख़ैरात, इमदाद करें. ताकि आने वाले महीने में ज्यादा से ज्यादा लोगों तक मदद पहुंचाई जाए.*
+
+*ईन जगहों पर राशन किट पहुंचाई..* ${places}
+
+*अल्हम्दुलिल्लाह*
+*अल्लाह का शुक्र है कि अल्लाह ने हमें इस रहमत वाले काम को करने की तौफ़िक दी और इसके क़ाबिल बनाया* *अल्लाह 'रहमत ए इस्लाम फाउंडेशन' परिवार के सभी साथियों की हिफाज़त फरमाये। उनके कारोबार में तरक्की अता करें और उन्हें हर मुसीबत से मेहफूज रखे। अल्लाह 'रहमत ए इस्लाम Foundation' के सभी साथियों को इस नेक काम के बदले बेहतर इनामात से नवाज़े। अल्लाह हम सब को ऐसे ही इस नेक काम में लगाये रखे। आमीन.*`;
+
+            rationHistory.unshift({
+                id: 'ration_' + Date.now(),
+                date: new Date().toLocaleString('hi-IN'),
+                report: report
+            });
+
+            save();
+            showToast("✅ राशन रिपोर्ट इतिहास में सेव हो गई");
+
+            document.getElementById("rationMonth").value = "";
+            document.getElementById("rationTotal").value = "";
+            document.getElementById("rationItems").value = "";
+            document.getElementById("kitPrice").value = "";
+            document.getElementById("totalKits").value = "";
+            document.getElementById("kitItems").value = "";
+            document.getElementById("rationPlaces").value = "";
+        }
+
+        function generateRationReport() {
+            shareRationReportOnly();
+            saveRationReportOnly();
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            if(id === 'tab-report') updateReportPreview();
+            if(id === 'tab-history') renderHistory();
+            if(id === 'tab-cases') renderCasesList();
+            window.scrollTo({ top: 0 });
+        }
+
+        function switchHistoryTab(t) { 
+            currentHistoryTab = t; 
+            document.querySelectorAll('[id^="btn-hist-"]').forEach(btn => {
+                btn.className = "flex-1 py-2 rounded-md text-gray-600 dark:text-gray-300 text-center transition-all";
+            });
+            if(t === 'donation') {
+                document.getElementById('btn-hist-donation').className = "flex-1 py-2 rounded-md bg-green-600 text-white shadow text-center transition-all";
+            } else {
+                document.getElementById('btn-hist-ration').className = "flex-1 py-2 rounded-md bg-green-600 text-white shadow text-center transition-all";
+            }
+            renderHistory(); 
+        }
+
+        function renderHistory() {
+            let html = ""; 
+            let query = document.getElementById("historySearch").value.toLowerCase();
+            let list = currentHistoryTab === 'donation' ? history : rationHistory;
+            let filtered = list.filter(h => h.report.toLowerCase().includes(query));
+            
+            if(filtered.length === 0) { document.getElementById("history-content").innerHTML = '<p class="text-center text-sm text-gray-400 mt-10">कोई रिकॉर्ड नहीं मिला</p>'; return; }
+            filtered.forEach((h) => {
+                let originalIndex = list.findIndex(item => item.date === h.date);
+                html += `<div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border mb-3">
+                    <pre id="rawReportText-${originalIndex}" class="text-xs text-gray-700 dark:text-gray-300 font-sans whitespace-pre-wrap leading-relaxed">${h.report}</pre>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="triggerDirectHistoryShare(${originalIndex})" class="flex-1 bg-green-600 text-white py-1.5 rounded-lg text-xs font-bold">📲 शेयर</button>
+                        <button onclick="deleteHistoryItem(${originalIndex})" class="bg-red-50 text-white px-3 py-1.5 rounded-lg text-xs font-bold">❌ डिलीट</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById("history-content").innerHTML = html;
+        }
+
+        function triggerDirectHistoryShare(index) {
+            let node = document.getElementById(`rawReportText-${index}`);
+            if(node) {
+                let cleanText = node.innerText;
+                window.open("https://wa.me/?text=" + encodeURIComponent(cleanText), '_blank');
+            } else {
+                showToast("❌ शेयर करने में समस्या आई");
+            }
+        }
+
+        function deleteHistoryItem(i) { if(!confirm("क्या आप इसे मिटाना चाहते हैं?")) return; if(currentHistoryTab === 'donation') history.splice(i,1); else rationHistory.splice(i,1); save(); renderHistory(); }
+        
+        function changeAdminPin() {
+            if(prompt("Master Key दर्ज करें:") === "@Akp889900") {
+                let np = prompt("नया 4-अंकों का PIN दर्ज करें:");
+                if(np && np.length>=4) { localStorage.setItem('adminPin', np); savedPin = np; showToast("✅ Admin सुरक्षा PIN बदल गया"); }
+            } else { showToast("❌ गलत Master Key"); }
+        }
+        
+        function toggleDarkMode() { 
+            document.documentElement.classList.toggle('dark'); 
+            let themeIcon = document.getElementById("themeIcon");
+            themeIcon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-lg text-yellow-400" : "fa-solid fa-moon text-lg";
+        }
+        
+        function exportBackup() { let blob = new Blob([JSON.stringify({ data, history, rationHistory, foundationCases: casesList })], {type:"application/json"}); let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "rahmat_backup.json"; a.click(); }
+        function importBackup(e) { let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = function(ev){ try { let b = JSON.parse(ev.target.result); data=b.data||[]; history=b.history||[]; rationHistory=b.rationHistory||[]; casesList=b.foundationCases||[]; save(); renderPreview(); renderCasesList(); showToast("✅ Data Restored"); }catch{ showToast("❌ Error"); } }; r.readAsText(f); }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPreview();
+            renderCasesList();
+            let liveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
+            if(document.getElementById("prev")) document.getElementById("prev").value = liveState.prev || 0;
+            if(document.getElementById("expense")) document.getElementById("expense").value = liveState.expense || 0;
+        });
+
+        // ── Back Navigation System ─────────────────────────────────────────
+        (function() {
+
+            var tabHistory = ['tab-home'];
+            var tabBtnMap = {
+                'tab-home':     0,
+                'tab-cases':    1,
+                'tab-report':   2,
+                'tab-history':  3,
+                'tab-ration':   4,
+                'tab-settings': 5
+            };
+
+            var _orig = window.switchTab || switchTab;
+            window.switchTab = function(id, el) {
+                _orig(id, el);
+                if (tabHistory[tabHistory.length - 1] !== id) {
+                    tabHistory.push(id);
+                }
+            };
+
+            function handleBack() {
+                if (tabHistory.length > 1) {
+                    tabHistory.pop();
+                    var prevId = tabHistory[tabHistory.length - 1];
+                    var btns = document.querySelectorAll('.nav-item');
+                    var idx = tabBtnMap[prevId];
+                    if (idx !== undefined && btns[idx]) {
+                        _orig(prevId, btns[idx]);
+                    }
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+
+            // Android TWA / Cordova
+            document.addEventListener('backbutton', function(e) {
+                e.preventDefault();
+                handleBack();
+            }, false);
+
+            // Browser / HTML viewer — push 2 buffer states
+            window.history.pushState({ g: 1 }, '');
+            window.history.pushState({ g: 2 }, '');
+
+            window.addEventListener('popstate', function() {
+                window.history.pushState({ g: 1 }, '');
+                window.history.pushState({ g: 2 }, '');
+                handleBack();
+            });
+
+        })();
+    </script>
+</body>
+</html>
