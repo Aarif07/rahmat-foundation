@@ -152,7 +152,7 @@
                     <h3 class="text-md font-bold text-green-900 dark:text-green-400 mb-1 flex items-center justify-center gap-2"><i class="fa-solid fa-qrcode"></i> डिजिटल पेमेंट गेटवे (QR Code)</h3>
                     <p class="text-xs text-gray-400 mb-4">सीधे स्कैन करके सहायता राशि भेजें</p>
                     <div class="max-w-[240px] mx-auto bg-gray-50 dark:bg-gray-900 p-3 rounded-2xl border dark:border-gray-700">
-                        <img src="qr_code.jpg" onerror="this.src='qr_code.jpg'" class="w-full rounded-xl shadow-sm">
+                        <img src="qr_code.jpg" onerror="this.onerror=null; this.alt='QR Code Folder Me Nahi Hai';" class="w-full rounded-xl shadow-sm">
                     </div>
                     <div class="mt-4 space-y-2 text-xs text-left bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border dark:border-gray-700 font-mono">
                         <div class="flex justify-between border-b dark:border-gray-800 pb-1.5"><span class="text-gray-400">नाम:</span> <span class="font-bold">AARIF KHAN</span></div>
@@ -649,96 +649,104 @@
 
         window.addEventListener('DOMContentLoaded', () => { loadUser(); });
 
-    // ── Back Navigation System ──────────────────────────────────────────────
-    (function() {
+    
+// ── Back Navigation System ──────────────────────────────────────────────
+(function () {
+    var currentTab = 'sect-home';
+    var popupOpen = false;
+    var backHandling = false;
 
-        var tabHistory = ['sect-home'];
-        var tabBtnMap = {
-            'sect-home':   0,
-            'sect-latest': 1,
-            'sect-team':   2,
-            'sect-about':  3
-        };
-        var popupOpen = false;
+    var originalSwitch = window.switchUserTab || switchUserTab;
 
-        // Wrap switchUserTab to record actual navigation history
-        var _orig = window.switchUserTab || switchUserTab;
-        window.switchUserTab = function(tabId, el) {
-            _orig(tabId, el);
-            if (tabHistory[tabHistory.length - 1] !== tabId) {
-                tabHistory.push(tabId);
-            }
-        };
+    window.switchUserTab = function(tabId, el){
+        currentTab = tabId;
+        originalSwitch(tabId, el);
+    };
 
-        function handleBack() {
-            // If popup is open, close it on back
-            if (popupOpen) {
-                closeExitPopup(false);
-                return;
-            }
-            if (tabHistory.length > 1) {
-                tabHistory.pop();
-                var prevId = tabHistory[tabHistory.length - 1];
-                var btns = document.querySelectorAll('.user-nav-btn');
-                var idx = tabBtnMap[prevId];
-                if (idx !== undefined && btns[idx]) {
-                    _orig(prevId, btns[idx]);
-                }
-            } else {
-                showExitPopup();
-            }
+    function goHome(){
+        var homeBtn = document.querySelector('[onclick*="sect-home"]');
+        if(homeBtn){
+            currentTab = 'sect-home';
+            originalSwitch('sect-home', homeBtn);
         }
+    }
 
-        function showExitPopup() {
-            var modal = document.getElementById('exitPopupModal');
-            if (!modal) return;
-            popupOpen = true;
-            modal.style.display = 'flex';
-            setTimeout(function() {
+    function showExitPopup(){
+        var modal = document.getElementById('exitPopupModal');
+        if(!modal) return;
+        popupOpen = true;
+        modal.style.display = 'flex';
+        // Double rAF for reliable transition start
+        requestAnimationFrame(function(){
+            requestAnimationFrame(function(){
                 modal.style.opacity = '1';
-                modal.querySelector('.popup-inner').style.transform = 'scale(1)';
-            }, 10);
+                var inner = modal.querySelector('.popup-inner');
+                if(inner) inner.style.transform = 'scale(1)';
+            });
+        });
+    }
+
+    window.closeExitPopup = function(shouldExit){
+        var modal = document.getElementById('exitPopupModal');
+        popupOpen = false;
+
+        if(modal){
+            modal.style.opacity = '0';
+            var inner = modal.querySelector('.popup-inner');
+            if(inner) inner.style.transform = 'scale(0.9)';
+            setTimeout(function(){ modal.style.display = 'none'; }, 220);
         }
 
-        window.closeExitPopup = function(shouldExit) {
-            var modal = document.getElementById('exitPopupModal');
-            if (modal) {
-                popupOpen = false;
-                modal.style.opacity = '0';
-                modal.querySelector('.popup-inner').style.transform = 'scale(0.88)';
-                setTimeout(function() { modal.style.display = 'none'; }, 260);
+        if(shouldExit){
+            if(window.Android && window.Android.exitApp){
+                window.Android.exitApp();
+            } else if(navigator.app && navigator.app.exitApp){
+                navigator.app.exitApp();
+            } else {
+                window.close();
             }
-            if (shouldExit) {
-                if (navigator.app && navigator.app.exitApp) {
-                    navigator.app.exitApp();
-                } else {
-                    window.close();
-                }
-            }
-        };
+        }
+    };
 
-        // ── Android TWA / Cordova backbutton event ──
-        document.addEventListener('backbutton', function(e) {
-            e.preventDefault();
-            handleBack();
-        }, false);
+    function handleBack(){
+        if(backHandling) return;
+        backHandling = true;
+        setTimeout(function(){ backHandling = false; }, 300);
 
-        // ── Browser / HTML viewer: intercept popstate ──
-        // Push TWO dummy states so we always have a buffer to catch popstate
-        window.history.pushState({ g: 1 }, '');
-        window.history.pushState({ g: 2 }, '');
+        if(popupOpen){
+            closeExitPopup(false);
+            return;
+        }
 
-        window.addEventListener('popstate', function(e) {
-            // Re-fill the buffer immediately to catch next press too
-            window.history.pushState({ g: 1 }, '');
-            window.history.pushState({ g: 2 }, '');
-            handleBack();
-        });
+        if(currentTab !== 'sect-home'){
+            goHome();
+            // State ko theek rakho
+            history.pushState({app:true}, '', location.href);
+            return;
+        }
 
-    })();
-    </script>
+        showExitPopup();
+        // State wapas push karo taaki next back ka kaam kare
+        history.pushState({app:true}, '', location.href);
+    }
 
-    <!-- Exit Popup -->
+    // PhoneGap/Cordova back button
+    document.addEventListener('backbutton', function(e){
+        e.preventDefault();
+        handleBack();
+    }, false);
+
+    // Browser/WebView history-based back
+    history.replaceState({app:true}, '', location.href);
+    history.pushState({app:true}, '', location.href);
+
+    window.addEventListener('popstate', function(e){
+        handleBack();
+    });
+})();
+</script>
+
+
     <div id="exitPopupModal" style="display:none;opacity:0;transition:opacity 0.22s ease;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:28px;">
         <div class="popup-inner" style="transition:transform 0.22s ease;transform:scale(0.86);background:#ffffff;border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,0.25);width:100%;max-width:270px;padding:18px 18px 16px;">
             <div style="display:flex;gap:10px;">

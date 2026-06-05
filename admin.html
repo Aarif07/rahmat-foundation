@@ -940,56 +940,95 @@ ${kitItems}
 
         // ── Back Navigation System ─────────────────────────────────────────
         (function() {
-
-            var tabHistory = ['tab-home'];
-            var tabBtnMap = {
-                'tab-home':     0,
-                'tab-cases':    1,
-                'tab-report':   2,
-                'tab-history':  3,
-                'tab-ration':   4,
-                'tab-settings': 5
-            };
+            var currentTab = 'tab-home';
+            var popupOpen = false;
+            var backHandling = false;
 
             var _orig = window.switchTab || switchTab;
             window.switchTab = function(id, el) {
+                currentTab = id;
                 _orig(id, el);
-                if (tabHistory[tabHistory.length - 1] !== id) {
-                    tabHistory.push(id);
+            };
+
+            function showExitPopup(){
+                var modal = document.getElementById('adminExitPopupModal');
+                if(!modal) return;
+                popupOpen = true;
+                modal.style.display = 'flex';
+                requestAnimationFrame(function(){
+                    requestAnimationFrame(function(){
+                        modal.style.opacity = '1';
+                        var inner = modal.querySelector('.popup-inner');
+                        if(inner) inner.style.transform = 'scale(1)';
+                    });
+                });
+            }
+
+            window.closeAdminExitPopup = function(shouldExit){
+                var modal = document.getElementById('adminExitPopupModal');
+                popupOpen = false;
+                if(modal){
+                    modal.style.opacity = '0';
+                    var inner = modal.querySelector('.popup-inner');
+                    if(inner) inner.style.transform = 'scale(0.9)';
+                    setTimeout(function(){ modal.style.display = 'none'; }, 220);
+                }
+                if(shouldExit){
+                    if(window.Android && window.Android.exitApp){
+                        window.Android.exitApp();
+                    } else if(navigator.app && navigator.app.exitApp){
+                        navigator.app.exitApp();
+                    } else {
+                        window.close();
+                    }
                 }
             };
 
             function handleBack() {
-                if (tabHistory.length > 1) {
-                    tabHistory.pop();
-                    var prevId = tabHistory[tabHistory.length - 1];
-                    var btns = document.querySelectorAll('.nav-item');
-                    var idx = tabBtnMap[prevId];
-                    if (idx !== undefined && btns[idx]) {
-                        _orig(prevId, btns[idx]);
-                    }
-                } else {
-                    window.location.href = 'index.html';
+                if(backHandling) return;
+                backHandling = true;
+                setTimeout(function(){ backHandling = false; }, 300);
+
+                if(popupOpen){
+                    closeAdminExitPopup(false);
+                    return;
                 }
+
+                if (currentTab !== 'tab-home') {
+                    var homeBtn = document.querySelector('[onclick*="tab-home"]');
+                    if (homeBtn) {
+                        _orig('tab-home', homeBtn);
+                        currentTab = 'tab-home';
+                    }
+                    history.pushState({ g: 1 }, '');
+                    return;
+                }
+
+                // Home tab par back - popup dikhao
+                showExitPopup();
+                history.pushState({ g: 1 }, '');
             }
 
-            // Android TWA / Cordova
             document.addEventListener('backbutton', function(e) {
                 e.preventDefault();
                 handleBack();
             }, false);
 
-            // Browser / HTML viewer — push 2 buffer states
-            window.history.pushState({ g: 1 }, '');
-            window.history.pushState({ g: 2 }, '');
+            history.replaceState({ g: 0 }, '');
+            history.pushState({ g: 1 }, '');
 
             window.addEventListener('popstate', function() {
-                window.history.pushState({ g: 1 }, '');
-                window.history.pushState({ g: 2 }, '');
                 handleBack();
             });
-
         })();
     </script>
+    <div id="adminExitPopupModal" style="display:none;opacity:0;transition:opacity 0.22s ease;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:28px;">
+        <div class="popup-inner" style="transition:transform 0.22s ease;transform:scale(0.86);background:#ffffff;border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,0.25);width:100%;max-width:270px;padding:18px 18px 16px;">
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeAdminExitPopup(false)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;letter-spacing:0.01em;">Cancel</button>
+                <button onclick="closeAdminExitPopup(true)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;letter-spacing:0.01em;">Exit</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
