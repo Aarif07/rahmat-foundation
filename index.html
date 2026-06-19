@@ -1,0 +1,839 @@
+<!DOCTYPE html> 
+<html lang="hi" class="light h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rahmat-e-Islam Foundation</title>
+    
+    <link class="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b4f2f">
+    <link class="apple-touch-icon" href="logo.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={darkMode:'class'}</script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        html, body { overscroll-behavior-y: contain; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .tab-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body id="mainBodyElement" class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100 h-full overflow-hidden">
+
+    <div id="authScreen" class="fixed inset-0 z-[999] bg-green-900 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md p-6 max-h-[95vh] overflow-y-auto">
+            <div id="auth-main-inputs">
+                <div class="text-center mb-5 flex flex-col items-center">
+                    <div class="w-20 h-20 mb-3 rounded-full shadow-md overflow-hidden border bg-white flex items-center justify-center">
+                        <img src="logo.png" id="mainLogo" onclick="triggerSecretAdminGate()" onerror="this.src='Logo.png';" alt="Logo" class="w-full h-full object-cover cursor-pointer select-none">
+                    </div>
+                    <h1 class="text-2xl font-bold text-green-900 dark:text-green-400">रहमत-ए-इस्लाम फाउंडेशन</h1>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">मदद अल्लाह की तरफ़ से</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5">लंकापुरी शास्त्री नगर, जयपुर</p>
+                </div>
+                <div class="space-y-3">
+                    <input id="name" type="text" placeholder="पूरा नाम" class="w-full border p-3 rounded-xl outline-none focus:border-green-600 transition dark:bg-gray-900 dark:border-gray-700 text-sm">
+                    <input id="mobile" type="number" placeholder="मोबाइल नंबर" class="w-full border p-3 rounded-xl outline-none focus:border-green-600 transition dark:bg-gray-900 dark:border-gray-700 text-sm">
+                    <input id="city" type="text" placeholder="शहर" class="w-full border p-3 rounded-xl outline-none focus:border-green-600 transition dark:bg-gray-900 dark:border-gray-700 text-sm">
+                    <select id="relation" class="w-full border p-3 rounded-xl outline-none bg-white dark:bg-gray-900 dark:border-gray-700 text-sm">
+                        <option>Foundation से जुड़ना चाहते हैं</option>
+                        <option>नए सदस्य हैं</option>
+                        <option>1 साल से जुड़े हैं</option>
+                        <option>2 साल से जुड़े हैं</option>
+                        <option>3+ साल से जुड़े हैं</option>
+                    </select>
+                    <button onclick="signup()" class="w-full bg-green-700 hover:bg-green-800 text-white p-3 rounded-xl font-bold shadow-md transition text-sm">
+                        Signup / Login <i class="fa-solid fa-right-to-bracket ml-1"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="auth-admin-pin-box" class="hidden text-center py-2">
+                <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200 mb-1">सिक्योरिटी वेरिफिकेशन</h2>
+                <p class="text-xs text-gray-500 mb-4">एडमिन डैशबोर्ड पर जाने के लिए PIN डालें</p>
+                <input type="password" id="adminSecretPin" placeholder="Admin PIN" class="w-full border p-3 text-center tracking-[0.4em] font-bold text-xl rounded-xl outline-none focus:border-green-700 mb-4 bg-gray-50 dark:bg-gray-900 dark:border-gray-700">
+                <div class="flex gap-2">
+                    <button onclick="toggleAdminPinBox(false)" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold p-2.5 rounded-xl text-xs transition hover:bg-gray-300">पीछे जाएँ</button>
+                    <button onclick="processAdminRedirect()" class="flex-1 bg-black text-white font-bold p-2.5 rounded-xl text-xs transition hover:bg-zinc-800">वेरिफाई करें <i class="fa-solid fa-unlock text-red-400 ml-1"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="userPanel" class="hidden h-full flex flex-col justify-between relative">
+        
+        <div class="bg-green-900 text-white p-3.5 shrink-0 shadow-md z-30">
+            <div class="flex justify-between items-center max-w-xl mx-auto">
+                <div class="flex items-center gap-2">
+                    <img src="logo.png" onerror="this.src='Logo.png';" class="w-7 h-7 rounded-full bg-white object-cover">
+                    <div>
+                        <h1 class="text-base font-bold tracking-wide">Rahmat-e-Islam</h1>
+                        <p class="text-[10px] text-green-200">मदद अल्लाह की तरफ़ से</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="toggleDarkMode()" class="p-1.5 rounded-full hover:bg-white/10"><i id="themeIcon" class="fa-solid fa-moon text-sm"></i></button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-2.5 py-1 rounded-lg text-[11px] font-bold shadow transition"><i class="fa-solid fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+            <div class="mt-2.5 max-w-xl mx-auto flex justify-between items-baseline">
+                <h2 class="text-base font-bold">अस्सलामुअलैकुम, <span id="userName" class="text-yellow-400"></span></h2>
+                <p class="text-[10px] text-green-100 opacity-80">लाइव पारदर्शी हिसाब-किताब</p>
+            </div>
+        </div>
+
+        <div id="stickyAllTimeTopFixedCard" class="bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 text-white border-b border-slate-800 px-4 py-2 shadow-md max-w-xl mx-auto w-full shrink-0 z-20">
+            <div class="flex justify-between items-center max-w-xl mx-auto text-center">
+                <div class="flex items-center gap-1">
+                    <span class="bg-amber-500 px-1 py-0.5 rounded text-slate-950 text-[9px] font-black"><i class="fa-solid fa-chart-pie"></i></span>
+                    <h3 class="text-[9px] font-black uppercase tracking-wider text-slate-400">ऑल-टाइम स्थिति:</h3>
+                </div>
+                <div class="flex gap-4 text-xs font-bold">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-gray-400 text-[9px]">कुल इमदाद:</span>
+                        <span id="user-total-income" class="font-black text-emerald-400">₹ 0</span>
+                    </div>
+                    <div class="w-[1px] bg-slate-800 h-3 self-center"></div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-gray-400 text-[9px]">कुल खर्च:</span>
+                        <span id="user-total-expense" class="font-black text-red-400">₹ 0</span>
+                    </div>
+                </div>
+                <div class="text-[9px] text-gray-500 font-bold hidden" id="expense-ratio-text">0%</div>
+                <div class="hidden" id="expense-ratio-bar"></div>
+            </div>
+        </div>
+
+        <main id="scrollContainerArea" class="flex-1 overflow-y-auto max-w-xl w-full mx-auto px-4 pt-3 pb-24">
+            
+            <div id="flashNoticeBanner" class="hidden bg-amber-500 text-slate-950 p-4 rounded-2xl shadow-md font-medium text-sm mb-4 border border-amber-600 flex items-start gap-3">
+                <i class="fa-solid fa-circle-exclamation text-xl mt-0.5 animate-bounce"></i>
+                <div class="flex-1">
+                    <span class="font-bold block text-xs uppercase tracking-wider opacity-75">महत्वपूर्ण सूचना / संदेश:</span>
+                    <p id="flashNoticeText" class="mt-0.5 leading-relaxed"></p>
+                </div>
+            </div>
+
+            <section id="sect-home" class="tab-section active space-y-4">
+                
+                <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-4 dark:bg-gray-800 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-calendar-check text-green-700 text-xs"></i>
+                            <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">लास्ट महीने का हिसाब (Calculated From Last Report)</h3>
+                        </div>
+                        <span id="user-dashboard-month" class="text-green-700 font-bold bg-green-50 dark:bg-green-950/40 dark:text-green-400 px-2.5 py-0.5 rounded text-[11px] border border-green-100 dark:border-green-900/30 hidden"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-blue-50/60 dark:bg-blue-950/30 rounded-xl p-3 border border-blue-100/40 dark:border-blue-900/40">
+                            <p class="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">इस महीने की कुल इमदाद</p>
+                            <h2 id="user-current-income" class="text-lg font-bold text-blue-700 dark:text-blue-400 mt-1">₹ 0</h2>
+                        </div>
+                        <div class="bg-red-50/60 dark:bg-red-950/30 rounded-xl p-3 border border-red-100/40 dark:border-red-900/40">
+                            <p class="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">इस महीने का कुल खर्च</p>
+                            <h2 id="user-current-expense" class="text-lg font-bold text-red-600 dark:text-red-400 mt-1">₹ 0</h2>
+                        </div>
+                        <div class="bg-purple-50/60 dark:bg-purple-950/30 rounded-xl p-3 border border-purple-100/40 dark:border-purple-900/40">
+                            <p class="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">पिछले महीने तक जमा इमदाद</p>
+                            <h2 id="user-previous-balance" class="text-lg font-bold text-purple-700 dark:text-purple-400 mt-1">₹ 0</h2>
+                        </div>
+                        <div class="bg-orange-50/60 dark:bg-orange-950/30 rounded-xl p-3 border border-orange-100/40 dark:border-orange-900/40">
+                            <p class="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-tight">इस महीने तक कुल जमा बची रक़म</p>
+                            <h2 id="user-net-balance" class="text-lg font-bold text-orange-600 dark:text-orange-400 mt-1">₹ 0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-800 via-emerald-800 to-teal-900 text-white p-5 rounded-3xl shadow-lg border border-emerald-700 space-y-4 text-center relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
+                    
+                    <div class="relative">
+                        <span class="bg-emerald-950/60 backdrop-blur-md text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider text-yellow-400 border border-emerald-800">
+                            <i class="fa-solid fa-hand-holding-heart mr-1"></i> बेसहारा परिवारों के लिए इमदाद की appeal
+                        </span>
+                        <h3 class="text-xs font-medium mt-3 tracking-wide leading-relaxed text-gray-200">
+                            "आपकी दी हुई छोटी सी सहायता किसी मजबूर विधवा, यतीम बच्चे या गरीब परिवार के चेहरे पर मुस्कान ला सकती है। अपने चंदे, सदके व खैरात की सुरक्षित राशि नीचे दिए गए माध्यमों द्वारा सीधे ट्रांसफर कर सकते हैं।"
+                        </h3>
+                    </div>
+                    
+                    <div class="bg-white text-slate-900 rounded-2xl p-4 space-y-3 max-w-sm mx-auto border shadow-md">
+                        <div class="text-center space-y-1 w-full overflow-hidden">
+                            <p class="text-xs font-bold text-green-800 mb-1">✨ ऑफिशियल बैंक UPI / अकाउंट विवरण ✨</p>
+                            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center font-mono text-xs text-gray-700 space-y-1.5 w-full overflow-hidden">
+                                <p class="flex items-center justify-center gap-1 flex-wrap sm:flex-nowrap whitespace-nowrap">
+                                    <b>UPI ID:</b> 
+                                    <span class="text-green-700 font-extrabold select-all text-[11px] sm:text-xs tracking-tight bg-green-50/50 px-1 py-0.5 rounded border border-green-100/30">rahmateislam-foundation@ybl</span>
+                                </p>
+                                <p><b>मोबाइल नंबर:</b> <span class="text-slate-900 font-bold select-all">7976729458</span></p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-center pt-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">स्कैन करके डायरेक्ट पेमेंट करें</p>
+                            <div class="bg-white p-2 border border-gray-200 rounded-xl shadow-xs">
+                                <img src="qr_code.png" onerror="this.src='logo.png';" class="w-36 h-36 object-contain mx-auto rounded-lg" alt="Payment QR Code">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-[9px] text-emerald-200/80 italic leading-tight px-1 font-medium">
+                        * ध्यान दें: भुगतान पूरा होने के बाद, कृपया स्क्रीनशॉट लेकर जिम्मेदार एडमिन साथियों (टीम सेक्शन) को व्हाट्सएप पर साझा अवश्य करें ताकि रसीद पारदर्शी रूप से जोड़ी जा सके।
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h3 class="text-md font-black text-green-900 dark:text-green-400 flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-hand-holding-heart text-xl text-green-700"></i> 🙋‍♂️ परिचय (Introduction)
+                    </h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
+                        यह हमारे समाज के सम्मानित and मोअज्जिज भाइयों की एक बेहद छोटी और मुखलिस कोशिश है। इसका एकमात्र पवित्र मकसद केवल और केवल हमारे आस-साथ रहने वाले गरीब, बेसहारा, यतीम और विधवा परिवारों की पूरी ईमानदारी के साथ इमदाद यानी वित्तीय सहायता करना है। आपके द्वारा दिया गया सदका और खैरात का एक-एक रुपया सीधे हकदारों तक पूरी पारदर्शिता के साथ पहुंचाया जाता है। हर महीने का लाइव हिसाब-किताब कोई भी सदस्य बिना किसी रोक-टोक के सीधे देख सकता है।
+                    </p>
+                    <div class="mt-4 pt-3.5 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+                        <button onclick="joinWhatsApp()" class="flex-1 bg-[#25D366] text-white font-bold py-2.5 rounded-xl text-xs flex justify-center items-center gap-1.5 shadow-xs"><i class="fa-brands fa-whatsapp text-sm"></i> व्हाट्सएप ग्रुप</button>
+                        <button onclick="shareApp()" class="flex-1 bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs flex justify-center items-center gap-1.5 shadow-xs"><i class="fa-solid fa-share-nodes text-sm"></i> ऐप शेयर करें</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sect-latest" class="tab-section space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 class="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-green-600"></i> फाइनल सेव रिपोर्ट्स और घोषणाएं</h2>
+                    <div class="flex bg-gray-100 dark:bg-gray-900 rounded-lg p-1 mb-3 text-xs font-semibold">
+                        <button onclick="toggleUserHistoryView('donation')" id="user-btn-don" class="flex-1 py-1.5 rounded-md bg-green-700 text-white shadow text-center transition-all">डोनेशन रिपोर्ट्स</button>
+                        <button onclick="toggleUserHistoryView('ration')" id="user-btn-rat" class="flex-1 py-1.5 rounded-md text-gray-600 dark:text-gray-400 text-center transition-all">राशन रिपोर्ट्स</button>
+                    </div>
+                    <div id="user-reports-container" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <section id="sect-cases" class="tab-section space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between items-center mb-1">
+                        <h2 class="text-base font-bold text-green-900 dark:text-green-400 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open text-green-700"></i> एक्टिव केस डायरी (पारदर्शी रिकॉर्ड)
+                        </h2>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mb-3">सुरक्षा एवं प्राइवेसी के लिए नाम, नंबर एवं पता पूर्णतः गुप्त (Blur) रखे गए हैं।</p>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                        <div onclick="filterUserCasesList('all')" id="caseFilter-all" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-slate-900 text-white border-slate-900">
+                            सभी केसेस (<span id="cnt-all">0</span>)
+                        </div>
+                        <div onclick="filterUserCasesList('permanent')" id="caseFilter-permanent" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
+                            स्थाई राशन (<span id="cnt-permanent">0</span>)
+                        </div>
+                        <div onclick="filterUserCasesList('occasional')" id="caseFilter-occasional" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
+                            कभी-कभी (<span id="cnt-occasional">0</span>)
+                        </div>
+                        <div onclick="filterUserCasesList('emergency')" id="caseFilter-emergency" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
+                            इमरजेंसी (<span id="cnt-emergency">0</span>)
+                        </div>
+                    </div>
+
+                    <div id="casesListDynamicContainer" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-gradient-to-br from-slate-800 to-zinc-900 text-white p-4 rounded-2xl shadow-md border border-slate-700">
+                    <h3 class="text-sm font-bold text-amber-400 mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-bullhorn"></i> क्या आप किसी जरूरतमंद को जानते हैं?
+                    </h3>
+                    <p class="text-[11px] text-gray-300 leading-relaxed mb-3">
+                        यदि आपके आस-पास कोई विधवा, यतीम या अत्यंत गरीब परिवार है जिसे मदद की आवश्यकता है, तो उसकी जानकारी हमारी टीम को भेजें। टीम वेरिफिकेशन के बाद उचित सहायता शुरू करेगी।
+                    </p>
+                    <button onclick="openReportCaseDialogWindow()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold p-2.5 rounded-xl text-xs flex justify-center items-center gap-1.5 transition shadow-sm">
+                        <i class="fa-solid fa-paper-plane"></i> नए केस की जानकारी सबमिट करें
+                    </button>
+                </div>
+            </section>
+
+            <section id="sect-team" class="tab-section space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-xs border dark:border-gray-700">
+                    <h2 class="text-md font-bold text-green-900 dark:text-green-400 mb-1 flex items-center gap-2"><i class="fa-solid fa-user-shield"></i>  फाउंडेशन के ज़िम्मेदार एडमिन साथी</h2>
+                    <p class="text-[11px] text-gray-400 mb-3">आप किसी भी समय नीचे दिए गए पदाधिकारियों से सीधे संपर्क कर सकते हैं।</p>
+                    <div id="adminsTeamGridContainer" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <section id="sect-about" class="tab-section space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+                    <div>
+                        <h3 class="text-md font-bold text-green-800 dark:text-green-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-square-poll-horizontal text-green-600"></i> हमारा उद्देश्य (Our Mission)</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                            हमारा मुख्य उद्देश्य समाज के गरीब, बेसहारा, यतीम, बेवा और जरूरतमंद परिवारों तक ईमानदारी और पारदर्शिता के साथ मदद पहुंचाना है। फाउंडेशन राशन वितरण, इमदाद, चिकित्सा सहायता और आपातकालीन सहायता जैसे कार्यों में लगातार सक्रिय है।
+                        </p>
+                    </div>
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <h3 class="text-md font-bold text-green-800 dark:text-green-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-eye text-green-600"></i> हमारा विज़न (Our Vision)</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                            एक ऐसे समाज का निर्माण करना जहाँ जरूरतमंद लोगों तक सम्मान के साथ सहायता पहुंचे और समाज का हर सक्षम व्यक्ति सदक़ा, ख़ैरात और इमदाद के जरिए इस नेक काम का हिस्सा बने।
+                        </p>
+                    </div>
+                    <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <h3 class="text-md font-bold text-green-800 dark:text-green-400 mb-1.5 flex items-center gap-1.5"><i class="fa-solid fa-shield-heart text-green-600"></i> पारदर्शिता और भरोसा</h3>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                            फाउंडेशन में आने वाली हर सहायता राशि और उसका उपयोग पूरी पारदर्शिता के साथ रिकॉर्ड किया जाता है। ऐप में दिखाई जाने वाली रिपोर्ट्स वास्तविक वितरण और खर्च के आधार पर अपडेट की जाती हैं।
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-green-700 text-lg mb-1"><i class="fa-solid fa-wheat-awn"></i></div>
+                        <h4 class="font-bold text-xs">मासिक राशन वितरण</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">हर महीने जरूरतमंद परिवारों तक राशन किट पहुंचाई जाती हैं।</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-red-500 text-lg mb-1"><i class="fa-solid fa-notes-medical"></i></div>
+                        <h4 class="font-bold text-xs">चिकित्सा सहायता</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">बीमारी, दवाइयों और इमरजेंसी हालात में आर्थिक सहायता।</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-blue-600 text-lg mb-1"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        <h4 class="font-bold text-xs">इमदाद और खैरात</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">समाज के जरूरतमंद लोगों तक सीधे मदद पहुंचाना।</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <div class="text-amber-500 text-lg mb-1"><i class="fa-solid fa-chart-line"></i></div>
+                        <h4 class="font-bold text-xs">लाइव हिसाब-किताब</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">सभी रिपोर्ट्स और हिसाब ऐप में पारदर्शी रूप से उपलब्ध।</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-scale-balanced text-amber-500"></i> DISCLAIMER & LEGAL PROTECTION
+                    </h3>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                        यह एप्लिकेशन केवल आंतरिक पारदर्शी ऑडिट और रिकॉर्ड मैनेजमेंट के लिए विकसित किया गया है। इसका उपयोग जनता से जबरन धन उगाही या किसी भी प्रकार के व्यावसायिक लाभ के लिए प्रतिबंधित है। एकत्रित सभी वित्तीय डेटा स्वैच्छिक योगदान पर आधारित है।
+                    </p>
+                    <div class="border-t border-dashed dark:border-gray-700 pt-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            फाउंडेशन का उद्देश्य केवल समाज सेवा और जरूरतमंद परिवारों तक मदद पहुंचाना है। किसी भी प्रकार की सहायता राशि पूरी तरह स्वैच्छिक है।
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-[#0b1426] text-gray-300 p-5 rounded-2xl space-y-3 text-xs text-center border border-gray-800">
+                    <p class="flex items-center justify-center gap-2 text-gray-400">
+                        <i class="fa-solid fa-location-dot text-green-500"></i>
+                        <span>लंकापुरी शास्त्री नगर, जयपुर, राजस्थान</span>
+                    </p>
+                    <p class="flex items-center justify-center gap-2 text-gray-400">
+                        <i class="fa-solid fa-envelope text-amber-400"></i>
+                        <span>Rahmat-e-Islam Foundation Community Support</span>
+                    </p>
+                    <div class="text-center pt-3 border-t border-gray-800/60">
+                        <p class="text-[10px] text-gray-500 font-medium">&copy; 2026 Rahmat-e-Islam Foundation | All Rights Reserved</p>
+                        <p class="text-[11px] text-emerald-400 font-bold tracking-widest uppercase mt-1">DEVELOPED BY AARIF KHAN PATHAN</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <div id="certificateModal" class="fixed inset-0 bg-black/80 z-[2000] hidden flex-col items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 w-full max-w-lg shadow-2xl relative border-4 border-double border-green-800">
+                <button onclick="closeCertModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black dark:hover:text-white text-xl p-1">❌</button>
+                <div class="border-2 border-green-700 p-5 text-center bg-stone-50 dark:bg-gray-950 rounded-xl space-y-4 font-serif">
+                    <div class="flex flex-col items-center">
+                        <img src="logo.png" onerror="this.src='Logo.png';" class="w-16 h-16 rounded-full bg-white object-cover shadow border">
+                        <h2 class="text-xl font-bold text-green-800 dark:text-green-400 mt-2">RAHMAT-E-ISLAM FOUNDATION</h2>
+                        <p class="text-[9px] text-gray-500 tracking-widest font-sans">MADAD ALLAH KI TARAF SE | JAIPUR</p>
+                    </div>
+                    <div class="py-2">
+                        <p class="text-amber-600 font-bold tracking-widest text-xs uppercase">Certificate of Appreciation</p>
+                        <div class="h-[1px] bg-amber-500 w-24 mx-auto my-1"></div>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 font-sans italic">This is proudly presented to</p>
+                    <h3 id="certModalName" class="text-xl font-bold text-slate-900 dark:text-white border-b-2 border-dotted border-gray-400 w-3/4 mx-auto pb-1 capitalize">-</h3>
+                    <p id="certModalBodyText" class="text-xs text-gray-600 dark:text-gray-400 font-sans leading-relaxed px-2">For his outstanding commitment and volunteer service member setups.</p>
+                    <div class="grid grid-cols-2 gap-4 items-end pt-4 font-sans text-left text-[10px]">
+                        <div>
+                            <p class="font-bold text-gray-700 dark:text-gray-300">ID: <span id="certModalId" class="font-mono text-green-700 font-bold">-</span></p>
+                            <p class="text-gray-400">Issued Date: <span id="certModalDate">-</span></p>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <div class="bg-white p-1 border rounded shadow-xs mb-1">
+                                <img id="certModalQr" src="" class="w-14 h-14">
+                            </div>
+                            <p class="text-[8px] text-gray-400 tracking-tighter">Scan to Verify Online</p>
+                        </div>
+                    </div>
+                </div>
+                <button id="certShareWhatsappBtn" class="w-full mt-3 bg-green-600 hover:bg-green-700 text-white font-bold p-2.5 rounded-xl text-xs flex justify-center items-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-sm"></i> डिजिटल सर्टिफिकेट शेयर करें
+                </button>
+            </div>
+        </div>
+
+        <div id="reportCaseUserModalWindow" class="fixed inset-0 bg-black/70 z-[2000] hidden flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md p-5 shadow-xl space-y-3">
+                <div class="flex justify-between items-center border-b pb-2 dark:border-gray-700">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5"><i class="fa-solid fa-file-medical text-green-700"></i> नए जरूरतमंद की जानकारी दें</h3>
+                    <button onclick="closeReportCaseDialogWindow()" class="text-gray-400 hover:text-gray-600 text-sm">✕</button>
+                </div>
+                <div class="space-y-2.5 text-xs">
+                    <div>
+                        <label class="block text-gray-500 mb-1 font-semibold">परिवार का विवरण / मुख्य समस्या:</label>
+                        <textarea id="repCaseDesc" rows="3" placeholder="उदा: विधवा महिला है, 3 छोटे बच्चे हैं, किराए के मकान में रहते हैं और घर में कोई कमाने वाला नहीं है..." class="w-full border p-2.5 rounded-xl outline-none focus:border-green-600 dark:bg-gray-900 dark:border-gray-700"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 mb-1 font-semibold">अनुमानित इलाका / शहर:</label>
+                        <input id="repCaseLoc" type="text" placeholder="उदा: शास्त्री नगर, जयपुर" class="w-full border p-2.5 rounded-xl outline-none focus:border-green-600 dark:bg-gray-900 dark:border-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 mb-1 font-semibold">उनका कोई संपर्क नंबर या संदर्भ (Optional):</label>
+                        <input id="repCaseContact" type="text" placeholder="उदा: पड़ोसी का नंबर या अन्य कोई जानकारी" class="w-full border p-2.5 rounded-xl outline-none focus:border-green-600 dark:bg-gray-900 dark:border-gray-700">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeReportCaseDialogWindow()" class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-2 rounded-xl text-xs">रद्द करें</button>
+                    <button onclick="submitUserReportedCaseToAdmin()" class="flex-1 bg-green-700 text-white font-bold py-2 rounded-xl text-xs">जानकारी भेजें <i class="fa-solid fa-paper-plane ml-0.5"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800 p-2 flex justify-around items-center shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-50 shrink-0">
+            <button onclick="switchUserTab('sect-home', this)" class="user-nav-btn text-green-700 font-bold flex flex-col items-center text-[10px] w-14 opacity-100"><i class="fa-solid fa-house text-base mb-0.5"></i>Home</button>
+            <button onclick="switchUserTab('sect-latest', this)" class="user-nav-btn text-gray-400 font-medium flex flex-col items-center text-[10px] w-14 opacity-60"><i class="fa-solid fa-file-contract text-base mb-0.5"></i>रिपोर्ट्स</button>
+            
+            <button onclick="switchUserTab('sect-cases', this)" class="user-nav-btn text-gray-400 font-medium flex flex-col items-center text-[10px] w-14 opacity-60"><i class="fa-solid fa-folder-open text-base mb-0.5"></i>केसेस</button>
+            
+            <button onclick="switchUserTab('sect-team', this)" class="user-nav-btn text-gray-400 font-medium flex flex-col items-center text-[10px] w-14 opacity-60"><i class="fa-solid fa-user-group text-base mb-0.5"></i>Team</button>
+            <button onclick="switchUserTab('sect-about', this)" class="user-nav-btn text-gray-400 font-medium flex flex-col items-center text-[10px] w-14 opacity-60"><i class="fa-solid fa-circle-info text-base mb-0.5"></i>About</button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
+            authDomain: "rahmat-foundation.firebaseapp.com", 
+            projectId: "rahmat-foundation", 
+            storageBucket: "rahmat-foundation.firebasestorage.app", 
+            messagingSenderId: "1000128409503", 
+            appId: "1:1000128409503:web:94173d012d4aace1a7d7aa", 
+            measurementId: "G-J6PPRSZ6P6" 
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = initializeFirestore(app, {
+              localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+            });
+
+            window.submitSecureVerificationRequestToCloud = async function(updatedRequests) {
+                await setDoc(doc(db, "cloudAppData", "verificationRequests"), { requests: updatedRequests, lastUpdated: new Date().toISOString() });
+            };
+
+            onSnapshot(doc(db, "cloudAppData", "verificationRequests"), (snap) => {
+                if(snap.exists()) { let d = snap.data(); if(d.requests) localStorage.setItem("pendingVerifications", JSON.stringify(d.requests)); }
+            });
+
+            onSnapshot(doc(db, "cloudAppData", "casesDirectoryRecord"), (caseSnap) => {
+                if(caseSnap.exists()) {
+                    let cData = caseSnap.data();
+                    if(cData.casesList) {
+                        localStorage.setItem("foundationCasesData", JSON.stringify(cData.casesList));
+                        if(window.renderUserCasesListUiEngine) window.renderUserCasesListUiEngine();
+                    }
+                }
+            });
+
+            // --- FIXED: REDIRECTS CASES INDIVIDUALLY TO A DEDICATED ADMIN ROW PIPELINE ---
+            window.pushNewCaseSuggestionToCloudServer = async function(newCaseObj) {
+                try {
+                    // Seed inside 'userReportedCases' collection so admin panel can mapping as unique array row list
+                    await addDoc(collection(db, "userReportedCases"), {
+                        ...newCaseObj,
+                        serverTimestamp: new Date().toISOString()
+                    });
+                } catch(err) { console.error("Database connection fault: ", err); }
+            };
+
+            function startCloudAppDataObserver() {
+                onSnapshot(doc(db, "cloudAppData", "masterRecord"), (docSnap) => {
+                    if (docSnap.exists()) {
+                        let cloudData = docSnap.data();
+                        if(cloudData.data) localStorage.setItem("data", JSON.stringify(cloudData.data));
+                        if(cloudData.history) localStorage.setItem("history", JSON.stringify(cloudData.history));
+                        if(cloudData.rationHistory) localStorage.setItem("rationHistory", JSON.stringify(cloudData.rationHistory));
+                        if(cloudData.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(cloudData.adminLiveState));
+                        if(cloudData.volunteerPoints) localStorage.setItem("volunteerPoints", JSON.stringify(cloudData.volunteerPoints));
+                        if(cloudData.certificatesList) localStorage.setItem("certificatesList", JSON.stringify(cloudData.certificatesList));
+                        
+                        if(cloudData.flashNoticeState) {
+                            let banner = document.getElementById("flashNoticeBanner");
+                            let textContainer = document.getElementById("flashNoticeText");
+                            if(cloudData.flashNoticeState.visible && cloudData.flashNoticeState.message.trim() !== "") {
+                                textContainer.innerText = cloudData.flashNoticeState.message; banner.classList.remove("hidden");
+                            } else { banner.classList.add("hidden"); }
+                        }
+                        calculateUserDashboardStats(); renderUserReports(); 
+                    }
+                });
+            }
+            window.startCloudAppDataObserver = startCloudAppDataObserver;
+        } catch(e) { console.log("Firebase system error bypass fallback triggered."); }
+    </script>
+
+    <script>
+        const TRUSTEE_MEMBERS_METADATA = [
+            { name: "Aarif Khan Pathan", mobile: "7976729458", address: "शास्त्री नगर, जयपुर", img: "admin_aarif.png", style: "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20" },
+            { name: "Mohammad Sohail", mobile: "9358244341", address: "शास्त्री नगर, जयपुर", img: "admin_sohail.png", style: "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" },
+            { name: "Ashfak Amaan", mobile: "9672713786", address: "शास्त्री नगर, जयपुर", img: "admin_ashfak.png", style: "border-purple-500 bg-purple-50/50 dark:bg-purple-950/20" },
+            { name: "Aabid Khan", mobile: "8209096045", address: "शास्त्री नगर, जयपुर", img: "admin_orange-500 bg-orange-50/50 dark:bg-orange-950/20" },
+            { name: "Dr. Mohammad Naiem Malik", mobile: "9897891380", address: "शास्त्री नगर, जयपुर", img: "admin_naiem.png", style: "border-teal-500 bg-teal-50/50 dark:bg-teal-950/20" }
+        ];
+
+        const INTENTIONAL_STATIC_CASES_SEED = [
+            { id: "CASE-2026-001", type: "permanent", problem: "विधवा महिला, आय का कोई निश्चित साधन नहीं है। 3 यतीम बच्चे स्कूल पढ़ते हैं।", location: "शास्त्री नगर (जयपुर)", phone: "******4341", status: "delivered", updateLog: "जून महीने का राशन पैक डिलीवर हो चुका है।" },
+            { id: "CASE-2026-002", type: "emergency", problem: "कैंसर पीड़ित बुजुर्ग मरीज, कीमोथेरेपी और तुरंत दवाइयों हेतु आर्थिक इमदाद की सख्त आवश्यकता।", location: "भट्टा बस्ती (जयपुर)", phone: "******9458", status: "approved", updateLog: "दवाइयों का बिल पास हुआ, पेमेंट डिस्पैच मोड पर है।" },
+            { id: "CASE-2026-003", type: "occasional", problem: "मजदूर भाई का परिवार, एक्सीडेंट में पैर टूटने के कारण अस्थाई रूप से राशन एवं आर्थिक सहायता दी जा रही है।", location: "लंकापुरी (जयपुर)", phone: "******3786", status: "dispatch", updateLog: "सहायता राशि स्वीकृत की गई है।" },
+            { id: "CASE-2026-004", type: "permanent", problem: "बुजुर्ग बेसहारा बेवा खातून, घर चलाने वाला कोई वारिस मौजूद नहीं है।", location: "संजय नगर (जयपुर)", phone: "******6045", status: "delivered", updateLog: "मासिक राशन किट सफलता पूर्वक पहुंचाई गई।" },
+            { id: "CASE-2026-005", type: "one-time", problem: "गरीब यतीम बच्ची की शादी हेतु घरेलू सामान एवं आर्थिक राशन किट सहायता उपक्रम।", location: "शास्त्री नगर (जयपुर)", phone: "******1380", status: "delivered", updateLog: "एकमुश्त इमदाद सामग्री सुपुर्द की गई।" }
+        ];
+
+        let activeCaseFilterCriteria = 'all';
+
+        function renderTrusteeProfilesList() {
+            let grid = document.getElementById("adminsTeamGridContainer"); if(!grid) return; let html = "";
+            TRUSTEE_MEMBERS_METADATA.forEach(adm => {
+                let initial = adm.name.charAt(0);
+                html += `<div class="border-l-4 ${adm.style} rounded-r-xl p-2 flex items-center justify-between shadow-2xs border border-y-gray-200/40 border-r-gray-200/40 dark:border-y-gray-800/20 dark:border-r-gray-800/20">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <div class="relative w-9 h-9 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs flex items-center justify-center shrink-0 border border-white"><img src="${adm.img}" onerror="this.style.display='none';" class="w-full h-full object-cover absolute inset-0"><span>${initial}</span></div>
+                        <div class="min-w-0"><h3 class="font-bold text-[13px] text-gray-900 dark:text-gray-100 truncate">${adm.name}</h3><p class="text-[9px] text-gray-400 flex items-center gap-1"><i class="fa-solid fa-location-dot text-[8px]"></i> ${adm.address} | 📞 ${adm.mobile}</p></div>
+                    </div>
+                    <div class="flex gap-1 shrink-0 pl-1"><a href="tel:+91${adm.mobile}" class="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-sm"><i class="fa-solid fa-phone"></i></a><a href="https://wa.me/91${adm.mobile}?text=Assalamualaikum" class="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px] shadow-sm"><i class="fa-brands fa-whatsapp text-xs"></i></a></div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function renderUserCasesListUiEngine() {
+            let targetDiv = document.getElementById("casesListDynamicContainer"); if(!targetDiv) return;
+            let rawData = localStorage.getItem("foundationCasesData");
+            let list = rawData ? JSON.parse(rawData) : INTENTIONAL_STATIC_CASES_SEED;
+
+            document.getElementById("cnt-all").innerText = list.length;
+            document.getElementById("cnt-permanent").innerText = list.filter(c => c.type === 'permanent').length;
+            document.getElementById("cnt-occasional").innerText = list.filter(c => c.type === 'occasional' || c.type === 'one-time').length;
+            document.getElementById("cnt-emergency").innerText = list.filter(c => c.type === 'emergency').length;
+
+            let filtered = list.filter(c => {
+                if(activeCaseFilterCriteria === 'all') return true;
+                if(activeCaseFilterCriteria === 'occasional') return (c.type === 'occasional' || c.type === 'one-time');
+                return c.type === activeCaseFilterCriteria;
+            });
+
+            if(filtered.length === 0) {
+                targetDiv.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">इस कैटेगरी में वर्तमान में कोई केस रिकॉर्ड दर्ज नहीं है।</p>`;
+                return;
+            }
+
+            let htmlString = "";
+            filtered.forEach((c) => {
+                let badgeColor = "bg-gray-100 text-gray-700";
+                let typeText = "सामान्य केस";
+                if(c.type === 'permanent') { badgeColor = "bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-400"; typeText = "स्थाई मासिक राशन परिवार"; }
+                else if(c.type === 'occasional') { badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-400"; typeText = "सामयिक (Kabhi-Kabhi) केस"; }
+                else if(c.type === 'one-time') { badgeColor = "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400"; typeText = "एक-बारगी वित्तीय सहायता"; }
+                else if(c.type === 'emergency') { badgeColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 animate-pulse"; typeText = "🚨 अर्जेंट मेडिकल/आपातकालीन केस"; }
+
+                let step1 = "text-green-600 font-bold", step2 = "text-gray-300", step3 = "text-gray-300";
+                if(c.status === 'dispatch') { step2 = "text-orange-500 font-bold"; }
+                else if(c.status === 'delivered') { step2 = "text-green-600 font-bold"; step3 = "text-emerald-600 font-bold"; }
+
+                htmlString += `
+                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-3.5 space-y-3 shadow-2xs">
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <span class="text-[10px] font-mono tracking-wider font-bold bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded-md">${c.id}</span>
+                            <span class="ml-1 px-2 py-0.5 rounded-md text-[9px] font-bold ${badgeColor}">${typeText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="text-xs space-y-1.5 leading-relaxed font-medium">
+                        <p class="text-gray-800 dark:text-gray-200"><b class="text-gray-400 font-normal">समस्या विवरण:</b> ${c.problem}</p>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] bg-white dark:bg-slate-950 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                            <p class="text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i><b>क्षेत्र:</b> <span class="blur-[3.5px] select-none text-gray-400">छिपा हुआ पता</span> (${c.location})</p>
+                            <p class="text-gray-500"><i class="fa-solid fa-phone mr-1"></i><b>संपर्क:</b> <span class="tracking-widest font-mono text-gray-700 dark:text-gray-300">${c.phone}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-950/60 p-2 rounded-xl border border-gray-100 dark:border-gray-900 text-[10px] space-y-2">
+                        <div class="flex justify-between text-[9px] font-bold uppercase tracking-wider text-center px-1">
+                            <span class="${step1}"><i class="fa-solid fa-check-circle"></i> वेरीफाइड</span>
+                            <span class="${step2}"><i class="fa-solid fa-truck-ramp-box"></i> सामग्री रवानगी</span>
+                            <span class="${step3}"><i class="fa-solid fa-circle-check"></i> सहायता डिलीवर</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-full" style="width: ${c.status==='delivered'?'100%':(c.status==='dispatch'?'66%':'33%')};"></div>
+                        </div>
+                        <p class="text-[9px] italic text-gray-400 flex items-center gap-1"><i class="fa-solid fa-bell text-amber-500 text-[8px]"></i> <b>ताजा अपडेट:</b> ${c.updateLog}</p>
+                    </div>
+
+                    <div class="pt-1 flex gap-2">
+                        <button onclick="triggerDirectCaseSponsorshipCall('${c.id}')" class="flex-1 bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-950/50 text-green-700 dark:text-green-400 font-bold py-1.5 rounded-lg text-[11px] border border-green-100 dark:border-green-900/40 flex justify-center items-center gap-1.5 transition">
+                            <i class="fa-solid fa-heart-circle-check text-xs"></i> इस केस को स्पॉन्सर करें
+                        </button>
+                    </div>
+                </div>`;
+            });
+            targetDiv.innerHTML = htmlString;
+        }
+
+        function filterUserCasesList(criteria) {
+            activeCaseFilterCriteria = criteria;
+            document.querySelectorAll('.case-filter-pill').forEach(p => {
+                p.className = "case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400";
+            });
+            let actPill = document.getElementById(`caseFilter-${criteria}`);
+            if(actPill) actPill.className = "case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-slate-900 text-white border-slate-900";
+            renderUserCasesListUiEngine();
+        }
+
+        function triggerDirectCaseSponsorshipCall(caseIdCode) {
+            let uData = JSON.parse(localStorage.getItem("foundationUser") || '{"name":"सदस्य"}');
+            let msg = `अस्सलामुअलैकुम रहमत-ए-इस्लाम फाउंडेशन, मैं केस कोड *${caseIdCode}* को सीधे तौर पर चंदे/राशन स्वरूप स्पॉन्सर करने में सहयोग प्रदान करना चाहता हूँ। कृपया विवरण बताएं। - ${uData.name}`;
+            window.open("https://wa.me/917976729458?text=" + encodeURIComponent(msg), '_blank');
+        }
+
+        function openReportCaseDialogWindow() {
+            document.getElementById("reportCaseUserModalWindow").classList.remove("hidden");
+            document.getElementById("reportCaseUserModalWindow").classList.add("flex");
+        }
+        function closeReportCaseDialogWindow() {
+            document.getElementById("reportCaseUserModalWindow").classList.add("hidden");
+            document.getElementById("reportCaseUserModalWindow").classList.remove("flex");
+            document.getElementById("repCaseDesc").value = "";
+            document.getElementById("repCaseLoc").value = "";
+            document.getElementById("repCaseContact").value = "";
+        }
+
+        // --- FIXED: INJECTS APP USER SENDER NAME & MOBILE CRITERIA SECURELY ---
+        function submitUserReportedCaseToAdmin() {
+            let desc = document.getElementById("repCaseDesc").value.trim();
+            let loc = document.getElementById("repCaseLoc").value.trim();
+            let cont = document.getElementById("repCaseContact").value.trim();
+            if(desc === "" || loc === "") { alert("कृपया विवरण एवं स्थान आवश्यक रूप से भरें।"); return; }
+            
+            // local storage se app login user ki info extraction
+            let loggedInUserMeta = JSON.parse(localStorage.getItem("foundationUser") || '{"name":"अज्ञात सदस्य","mobile":"0000000000"}');
+            
+            let reportObject = {
+                reportedByUserName: loggedInUserMeta.name,       // Report karne wale ka naam
+                reportedByUserMobile: loggedInUserMeta.mobile,   // Report karne wale ka number
+                details: desc,
+                location: loc,
+                contactReference: cont,
+                date: new Date().toLocaleDateString('en-GB')
+            };
+
+            if(window.pushNewCaseSuggestionToCloudServer) {
+                window.pushNewCaseSuggestionToCloudServer(reportObject);
+            }
+            alert("✨ माशाअल्लाह! आपकी जानकारी एडमिन साथियों तक सुरक्षित भेज दी गई है। वेरिफिकेशन टीम जल्द ही मुआयना करेगी।");
+            closeReportCaseDialogWindow();
+        }
+
+        let secretClickCount = 0; let secretResetTimeout;
+        function triggerSecretAdminGate() { secretClickCount++; clearTimeout(secretResetTimeout); secretResetTimeout = setTimeout(() => { secretClickCount = 0; }, 2000); if (secretClickCount === 5) { secretClickCount = 0; toggleAdminPinBox(true); } }
+        function toggleAdminPinBox(showBox) { let inputsForm = document.getElementById("auth-main-inputs"); let pinGateForm = document.getElementById("auth-admin-pin-box"); if (showBox) { inputsForm.classList.add("hidden"); pinGateForm.classList.remove("hidden"); } else { inputsForm.classList.remove("hidden"); pinGateForm.classList.add("hidden"); } }
+        function toggleDarkMode() { document.documentElement.classList.toggle('dark'); let icon = document.getElementById("themeIcon"); icon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-sm text-yellow-400" : "fa-solid fa-moon text-sm"; }
+        function processAdminRedirect() { let enteredPin = document.getElementById("adminSecretPin").value; let targetAdminPin = localStorage.getItem('adminPin') || '7860'; if(enteredPin === targetAdminPin) { sessionStorage.setItem('isUnlocked', 'true'); window.location.href = "admin.html"; } else { alert("❌ गलत सुरक्षा PIN नंबर"); document.getElementById("adminSecretPin").value = ""; } }
+
+        function signup() {
+            const user = { name: document.getElementById("name").value.trim(), mobile: document.getElementById("mobile").value.trim(), city: document.getElementById("city").value.trim(), relation: document.getElementById("relation").value };
+            if(user.name === "" || user.mobile === ""){ alert("कृपया नाम और मोबाइल नंबर भरें"); return; }
+            localStorage.setItem("foundationUser", JSON.stringify(user)); loadUser();
+        }
+
+        function loadUser() {
+            const user = JSON.parse(localStorage.getItem("foundationUser"));
+            if(user) {
+                document.getElementById("authScreen").classList.add("hidden"); document.getElementById("userPanel").classList.remove("hidden"); document.getElementById("userName").innerText = user.name;
+                let bodyEl = document.getElementById("mainBodyElement"); if (bodyEl) { bodyEl.classList.remove("overflow-hidden"); bodyEl.classList.add("overflow-y-auto"); }
+                if(window.startCloudAppDataObserver) window.startCloudAppDataObserver();
+                calculateUserDashboardStats(); renderUserReports(); renderTrusteeProfilesList();
+                if(window.renderUserCasesListUiEngine) window.renderUserCasesListUiEngine();
+            }
+        }
+
+        function logout() { localStorage.removeItem("foundationUser"); location.reload(); }
+        function joinWhatsApp() { window.open("https://wa.me/917976729458?text=" + encodeURIComponent("रहमत-ए-इस्लाम फाउंडेशन के ग्रुप में जोड़ें।"), '_blank'); }
+        function shareApp() { let appUrl = window.location.href; let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन* 🌙\n_मदद अल्लाह की तरफ़ से_\n\nजयपुर शास्त्री नगर की सबसे पारदर्शी संस्था। चंदे का लाइव हिसाब और राशन वितरण की final reports देखने के लिए नीचे दिए गए लिंक से ऐप ओपन करें:\n\n🔗 *ऐप link:* ${appUrl}`; window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank'); }
+
+        function calculateUserDashboardStats() {
+            let history = JSON.parse(localStorage.getItem("history") || "[]");
+            let rationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+            let data = JSON.parse(localStorage.getItem("data") || "[]");
+            let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
+
+            let monthBadge = document.getElementById("user-dashboard-month");
+            
+            let extractedThisMonthDonationsText = 0;
+            let extractedPrevBalFromLastReportText = 0;
+            let extractedNetRemainingBalText = 0;
+            let extractedCurrentMonthExpenseText = 0;
+
+            if (history && history.length > 0) {
+                let latestReportItem = history[0]; 
+                let reportText = latestReportItem.report || "";
+                
+                let monthMatch = reportText.match(/(?:महीना|महिना|Month)\s*[-:=📅`*₹\s]+([^\n📅`*₹]+)/i);
+                if (monthMatch && monthMatch[1] && monthBadge) {
+                    monthBadge.innerText = monthMatch[1].trim(); monthBadge.classList.remove("hidden");
+                }
+
+                let thisMonthMatch = reportText.match(/तक जमा रक़म\s*=\s*(\d+)/i) || reportText.match(/तक जमा रक़म\s*=\s*₹?\s*(\d+)/i);
+                if(thisMonthMatch && thisMonthMatch[1]) extractedThisMonthDonationsText = Number(thisMonthMatch[1]);
+
+                let expenseMatch = reportText.match(/राशन का कुल खर्च हुआ\s*=\s*(\d+)/i) || reportText.match(/राशन का कुल खर्च हुआ\s*=\s*₹?\s*(\d+)/i);
+                if(expenseMatch && expenseMatch[1]) extractedCurrentMonthExpenseText = Number(expenseMatch[1]);
+
+                let netMatch = reportText.match(/कुल बची रक़म\s*=\s*(\d+)/i) || reportText.match(/कुल बची रक़म\s*=\s*₹?\s*(\d+)/i);
+                if(netMatch && netMatch[1]) extractedNetRemainingBalText = Number(netMatch[1]);
+
+                let prevMatch = reportText.match(/पिछले महीने तक जमा बची रक़म\s*=\s*(\d+)/i) || reportText.match(/पिछले महीने तक जमा बची रक़म\s*=\s*₹?\s*(\d+)/i);
+                if(prevMatch && prevMatch[1]) extractedPrevBalFromLastReportText = Number(prevMatch[1]);
+
+                document.getElementById("user-current-income").innerText = `₹ ${extractedThisMonthDonationsText}`;
+                document.getElementById("user-current-expense").innerText = `₹ ${extractedCurrentMonthExpenseText}`;
+                document.getElementById("user-previous-balance").innerText = `₹ ${extractedPrevBalFromLastReportText}`;
+                document.getElementById("user-net-balance").innerText = `₹ ${extractedNetRemainingBalText}`;
+            } else {
+                let liveDataSum = data.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+                let adminPrevBal = Number(adminLiveState.prev || 0); 
+                let adminExp = Number(adminLiveState.expense || 0);
+                let netLiveBal = (liveDataSum + adminPrevBal) - adminExp;
+                
+                document.getElementById("user-current-income").innerText = `₹ ${liveDataSum}`;
+                document.getElementById("user-current-expense").innerText = `₹ ${adminExp}`;
+                document.getElementById("user-previous-balance").innerText = `₹ ${adminPrevBal}`;
+                document.getElementById("user-net-balance").innerText = `₹ ${netLiveBal}`;
+            }
+
+            let totalHistoricDonationsSumTotal = 0;
+            history.forEach(h => {
+                let incMatch = h.report.match(/जमा रक़म\s*=\s*(\d+)/) || h.report.match(/जमा रक़म\s*=\s*₹?\s*(\d+)/);
+                if (incMatch && incMatch[1]) totalHistoricDonationsSumTotal += Number(incMatch[1]);
+            });
+
+            let totalHistoricExpensesSumTotal = 0;
+            rationHistory.forEach(r => {
+                let expMatch = r.report.match(/कुल खर्चा हुआ\s*=\s*₹?\s*(\d+)/) || r.report.match(/कुल खर्चा\s*=\s*₹?\s*(\d+)/) || r.report.match(/कुल खर्चा हुआ\s*=\s*(\d+)/);
+                if (expMatch && expMatch[1]) totalHistoricExpensesSumTotal += Number(expMatch[1]);
+            });
+
+            let currentMonthIncomeLive = data.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+            let currentMonthExpenseLive = history.length > 0 ? 0 : Number(adminLiveState.expense || 0);
+
+            let grandTotalIncome = totalHistoricDonationsSumTotal + (history.length > 0 ? 0 : currentMonthIncomeLive);
+            let grandTotalExpenses = totalHistoricExpensesSumTotal + currentMonthExpenseLive;
+
+            if(document.getElementById("user-total-income")) {
+                document.getElementById("user-total-income").innerText = `₹ ${grandTotalIncome}`;
+                document.getElementById("user-total-expense").innerText = `₹ ${grandTotalExpenses}`;
+            }
+        }
+
+        window.renderUserCasesListUiEngine = renderUserCasesListUiEngine;
+
+        function switchUserTab(tabSectionId, element) {
+            document.querySelectorAll('.tab-section').forEach(sect => sect.classList.remove('active')); document.getElementById(tabSectionId).classList.add('active');
+            document.querySelectorAll('.user-nav-btn').forEach(btn => { btn.classList.remove('text-green-700', 'font-bold'); btn.classList.add('text-gray-400', 'font-medium', 'opacity-60'); });
+            element.classList.remove('text-gray-400', 'font-medium', 'opacity-60'); element.classList.add('text-green-700', 'font-bold', 'opacity-100');
+            
+            let topStickyBarFrame = document.getElementById("stickyAllTimeTopFixedCard");
+            if(topStickyBarFrame) {
+                if(tabSectionId === 'sect-home') { topStickyBarFrame.classList.remove('hidden'); }
+                else { topStickyBarFrame.classList.add('hidden'); }
+            }
+
+            calculateUserDashboardStats(); 
+            if(tabSectionId === 'sect-cases' && window.renderUserCasesListUiEngine) window.renderUserCasesListUiEngine();
+            let scrNode = document.getElementById("scrollContainerArea"); if(scrNode) scrNode.scrollTop = 0;
+        }
+
+        let userActiveHistTab = 'donation';
+        function toggleUserHistoryView(type) {
+            userActiveHistTab = type; let btnDon = document.getElementById('user-btn-don'); let btnRat = document.getElementById('user-btn-rat');
+            if(type === 'donation') {
+                if(btnDon) btnDon.className = "flex-1 py-1.5 rounded-md bg-green-700 text-white shadow text-center transition-all";
+                if(btnRat) btnRat.className = "flex-1 py-1.5 rounded-md text-gray-600 text-center transition-all";
+            } else {
+                if(btnRat) btnRat.className = "flex-1 py-1.5 rounded-md bg-green-700 text-white shadow text-center transition-all";
+                if(btnDon) btnDon.className = "flex-1 py-1.5 rounded-md text-gray-600 text-center transition-all";
+            }
+            renderUserReports();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Internal sync handler setups
+        });
+
+        function renderUserReports() {
+            let container = document.getElementById("user-reports-container"); if(!container) return;
+            let list = userActiveHistTab === 'donation' ? JSON.parse(localStorage.getItem("history") || "[]") : JSON.parse(localStorage.getItem("rationHistory") || "[]");
+            if(list.length === 0) { container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">कोई भी फ़ाइनल रिपोर्ट रिकॉर्ड नहीं मिला।</p>`; return; }
+            let reversedList = [...list].reverse(); let htmlData = "";
+            reversedList.forEach((item, idx) => {
+                let distinctCardStyle = userActiveHistTab === 'donation' ? 'border-gray-200' : 'border-orange-200 bg-orange-50/40'; let reportText = item.report || ""; let title = "पुरानी रिपोर्ट"; let monthMatch = reportText.match(/(?:महीना|महिना|Month)\s*[-:=]?\s*([^\n*₹]+)/i);
+                if(monthMatch && monthMatch[1]) { title = monthMatch[1].trim(); } else { let dateMatch = reportText.match(/(\d{2}\/\d{2}\/\d{2})/); if(dateMatch && dateMatch[1]) title = "रिपोर्ट - " + dateMatch[1]; }
+                let isLatest = idx === 0;
+                htmlData += `<div class="bg-white dark:bg-gray-800 rounded-xl shadow-xs border ${distinctCardStyle} overflow-hidden mb-3">
+                    <button onclick="toggleOldReport(${idx})" class="w-full flex justify-between items-center px-4 py-3 text-left bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
+                        <div><p class="text-xs font-bold text-green-700 dark:text-green-400">${title}</p><p class="text-[10px] text-gray-400 mt-0.5">${item.date}</p></div>
+                        <i id="reportArrow-${idx}" class="fa-solid ${isLatest ? 'fa-chevron-up' : 'fa-chevron-down'} text-gray-400 text-xs"></i>
+                    </button>
+                    <div id="reportBody-${idx}" class="${isLatest ? 'p-4' : 'hidden p-4'}">
+                        <pre id="userReportTextContainer-${idx}" class="text-xs text-gray-700 dark:text-gray-300 bg-gray-50/80 dark:bg-gray-900 p-3 rounded-lg font-sans leading-relaxed whitespace-pre-wrap border border-gray-100 dark:border-gray-700">${reportText}</pre>
+                        <div class="mt-2 text-right"><button onclick="triggerUserReportShare(${idx})" class="bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold px-3 py-1 rounded shadow-2xs transition"><i class="fa-solid fa-share-nodes"></i> व्हाट्सएप शेयर</button></div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = htmlData;
+        }
+
+        function toggleOldReport(index) {
+            let body = document.getElementById(`reportBody-${index}`); let arrow = document.getElementById(`reportArrow-${index}`); if(!body || !arrow) return;
+            document.querySelectorAll("[id^='reportBody-']").forEach((el, i) => { if(i !== index) { el.classList.add("hidden"); let otherArrow = document.getElementById(`reportArrow-${i}`); if(otherArrow) { otherArrow.classList.remove("fa-chevron-up"); otherArrow.classList.add("fa-chevron-down"); } } });
+            if(body.classList.contains('hidden')) { body.classList.remove('hidden'); arrow.classList.remove('fa-chevron-down'); arrow.classList.add('fa-chevron-up'); } else { body.classList.add('hidden'); arrow.classList.remove('fa-chevron-up'); arrow.classList.add('fa-chevron-down'); }
+        }
+        function triggerUserReportShare(index) { let targetNode = document.getElementById(`userReportTextContainer-${index}`); if(targetNode) { window.open("https://wa.me/?text=" + encodeURIComponent(targetNode.innerText), '_blank'); } }
+
+        window.addEventListener('DOMContentLoaded', () => { loadUser(); });
+
+        // Navigation Controllers
+        (function() {
+            var tabHistory = ['sect-home']; var tabBtnMap = { 'sect-home': 0, 'sect-latest': 1, 'sect-cases': 2, 'sect-team': 3, 'sect-about': 4 }; var popupOpen = false;
+            var _orig = window.switchUserTab || switchUserTab; window.switchUserTab = function(tabId, el) { _orig(tabId, el); if (tabHistory[tabHistory.length - 1] !== tabId) { tabHistory.push(tabId); } };
+            function handleBack() {
+                if (popupOpen) { closeExitPopup(false); return; }
+                if (tabHistory.length > 1) { tabHistory.pop(); var prevId = tabHistory[tabHistory.length - 1]; var btns = document.querySelectorAll('.user-nav-btn'); var idx = tabBtnMap[prevId]; if (idx !== undefined && btns[idx]) { _orig(prevId, btns[idx]); } } 
+                else { showExitPopup(); }
+            }
+            function showExitPopup() { var modal = document.getElementById('exitPopupModal'); if (!modal) return; popupOpen = true; modal.style.display = 'flex'; setTimeout(function() { modal.style.opacity = '1'; modal.querySelector('.popup-inner').style.transform = 'scale(1)'; }, 10); }
+            window.closeExitPopup = function(shouldExit) { var modal = document.getElementById('exitPopupModal'); if (modal) { popupOpen = false; modal.style.opacity = '0'; modal.querySelector('.popup-inner').style.transform = 'scale(0.88)'; setTimeout(function() { modal.style.display = 'none'; }, 260); } if (shouldExit) { if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); } else { window.close(); } } };
+            document.addEventListener('backbutton', function(e) { e.preventDefault(); handleBack(); }, false);
+            window.history.pushState({ g: 1 }, ''); window.history.pushState({ g: 2 }, ''); window.history.addEventListener('popstate', function(e) { window.history.pushState({ g: 1 }, ''); window.history.pushState({ g: 2 }, ''); handleBack(); });
+        })();
+    </script>
+
+    <div id="exitPopupModal" style="display:none;opacity:0;transition:opacity 0.22s ease;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:28px;">
+        <div class="popup-inner" style="transition:transform 0.22s ease;transform:scale(0.86);background:#ffffff;border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,0.25);width:100%;max-width:270px;padding:18px 18px 16px;">
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeExitPopup(false)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;letter-spacing:0.01em;">Cancel</button>
+                <button onclick="closeExitPopup(true)" style="flex:1;font-weight:700;padding:13px 0;border-radius:14px;border:none;cursor:pointer;font-size:15px;background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;letter-spacing:0.01em;">Exit</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
