@@ -876,9 +876,10 @@
         }
 
         function shareAdminApp() {
-            let appUrl = window.location.href.replace('admin.html', 'index.html');
-            let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन* 🌙\n\nजयपुर शास्त्री नगर की सबसे पारदर्शी संस्था। सभी प्रकार के मासिक राशन वितरण और लाइव चंदे के हिसाब-किताब के लिए नीचे लिंक पर क्लिक करके एप्लिकेशन खोलें:\n\n🔗 *ऐप लिंक:* ${appUrl}`;
-            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
+    // Purana replace system hata kar seedhe aapki short link set kar di hai
+    let landingPageUrl = "https://bit.ly/Rahmat-e-Islam-app";
+    let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन (एडमिन पोर्टल)* 🌙\n\nसंस्था के ट्रस्टी मेंबर्स और मैनेजमेंट के उपयोग के लिए ऑफिशियल एंड्रॉइड ऐप का वेब डाउनलोड पेज। नीचे दिए गए लिंक से ऐप डाउनलोड कर सकते हैं:\n\n👇 *ऑफिशियल डाउनलोड लिंक:* \n${landingPageUrl}`;
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
         }
 
         function publishNotice(shouldShow) {
