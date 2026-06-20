@@ -190,7 +190,7 @@
                         <i class="fa-solid fa-hand-holding-heart text-xl text-green-700"></i> 🙋‍♂️ परिचय (Introduction)
                     </h3>
                     <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                        यह हमारे समाज के सम्मानित and मोअज्जिज भाइयों की एक बेहद छोटी और मुखलिस कोशिश है। इसका एकमात्र पवित्र मकसद केवल और केवल हमारे आस-साथ रहने वाले गरीब, बेसहारा, यतीम और विधवा परिवारों की पूरी ईमानदारी के साथ इमदाद यानी वित्तीय सहायता करना है। आपके द्वारा दिया गया सदका और खैरात का एक-एक रुपया सीधे हकदारों तक पूरी पारदर्शिता के साथ पहुंचाया जाता है। हर महीने का लाइव हिसाब-किताब कोई भी सदस्य बिना किसी रोक-टोक के सीधे देख सकता है।
+                        यह हमारे समाज के सम्मानित और मोअज्जिज भाइयों की एक बेहद छोटी और मुखलिस कोशिश है। इसका एकमात्र पवित्र मकसद केवल और केवल हमारे आस-साथ रहने वाले गरीब, बेसहारा, यतीम और विधवा परिवारों की पूरी ईमानदारी के साथ इमदाद यानी वित्तीय सहायता करना है। आपके द्वारा दिया गया सदका और खैरात का एक-एक रुपया सीधे हकदारों तक पूरी पारदर्शिता के साथ पहुंचाया जाता है। हर महीने का लाइव हिसाब-किताब कोई भी सदस्य बिना किसी रोक-टोक के सीधे देख सकता है।
                     </p>
                     <div class="mt-4 pt-3.5 border-t border-gray-100 dark:border-gray-700 flex gap-2">
                         <button onclick="joinWhatsApp()" class="flex-1 bg-[#25D366] text-white font-bold py-2.5 rounded-xl text-xs flex justify-center items-center gap-1.5 shadow-xs"><i class="fa-brands fa-whatsapp text-sm"></i> व्हाट्सएप ग्रुप</button>
@@ -226,15 +226,15 @@
                         <div onclick="filterUserCasesList('permanent')" id="caseFilter-permanent" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
                             स्थाई राशन (<span id="cnt-permanent">0</span>)
                         </div>
-                        <div onclick="filterUserCasesList('occasional')" id="caseFilter-occasional" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
-                            कभी-कभी (<span id="cnt-occasional">0</span>)
+                        <div onclick="filterUserCasesList('temporary')" id="caseFilter-temporary" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
+                            कभी-कभी (<span id="cnt-temporary">0</span>)
                         </div>
                         <div onclick="filterUserCasesList('emergency')" id="caseFilter-emergency" class="case-filter-pill cursor-pointer p-2 rounded-xl text-center border font-bold text-[10px] bg-white text-gray-600 border-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400">
                             इमरजेंसी (<span id="cnt-emergency">0</span>)
                         </div>
                     </div>
 
-                    <div id="casesListDynamicContainer" class="space-y-3"></div>
+                    <div id="casesListDynamicContainer" class="space-y-4"></div>
                 </div>
 
                 <div class="bg-gradient-to-br from-slate-800 to-zinc-900 text-white p-4 rounded-2xl shadow-md border border-slate-700">
@@ -308,7 +308,7 @@
                         <i class="fa-solid fa-scale-balanced text-amber-500"></i> DISCLAIMER & LEGAL PROTECTION
                     </h3>
                     <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                        यह एप्लिकेशन केवल आंतरिक पारदर्शी ऑडिट और रिकॉर्ड मैनेजमेंट के लिए विकसित किया गया है। इसका उपयोग जनता से जबरन धन उगाही या किसी भी प्रकार के व्यावसायिक लाभ के लिए प्रतिबंधित है। एकत्रित सभी वित्तीय डेटा स्वैच्छिक योगदान पर आधारित है।
+                        यह एप्लिकेशन केवल आंतरिक पारदर्शी ऑडिट और रिकॉर्ड रिकॉर्ड मैनेजमेंट के लिए विकसित किया गया है। इसका उपयोग जनता से जबरन धन उगाही या किसी भी प्रकार के व्यावसायिक लाभ के लिए प्रतिबंधित है। एकत्रित सभी वित्तीय डेटा स्वैच्छिक योगदान पर आधारित है।
                     </p>
                     <div class="border-t border-dashed dark:border-gray-700 pt-3">
                         <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -491,12 +491,14 @@
             { name: "Dr. Mohammad Naiem Malik", mobile: "9897891380", address: "शास्त्री नगर, जयपुर", img: "admin_naiem.png", style: "border-teal-500 bg-teal-50/50 dark:bg-teal-950/20" }
         ];
 
-        const INTENTIONAL_STATIC_CASES_SEED = [
-            { id: "CASE-2026-001", type: "permanent", problem: "विधवा महिला, आय का कोई निश्चित साधन नहीं है। 3 यतीम बच्चे स्कूल पढ़ते हैं।", location: "शास्त्री नगर (जयपुर)", phone: "******4341", status: "delivered", updateLog: "जून महीने का राशन पैक डिलीवर हो चुका है।" },
-            { id: "CASE-2026-002", type: "emergency", problem: "कैंसर पीड़ित बुजुर्ग मरीज, कीमोथेरेपी और तुरंत दवाइयों हेतु आर्थिक इमदाद की सख्त आवश्यकता।", location: "भट्टा बस्ती (जयपुर)", phone: "******9458", status: "approved", updateLog: "दवाइयों का बिल पास हुआ, पेमेंट डिस्पैच मोड पर है।" },
-            { id: "CASE-2026-003", type: "occasional", problem: "मजदूर भाई का परिवार, एक्सीडेंट में पैर टूटने के कारण अस्थाई रूप से राशन एवं आर्थिक सहायता दी जा रही है।", location: "लंकापुरी (जयपुर)", phone: "******3786", status: "dispatch", updateLog: "सहायता राशि स्वीकृत की गई है।" },
-            { id: "CASE-2026-004", type: "permanent", problem: "बुजुर्ग बेसहारा बेवा खातून, घर चलाने वाला कोई वारिस मौजूद नहीं है।", location: "संजय नगर (जयपुर)", phone: "******6045", status: "delivered", updateLog: "मासिक राशन किट सफलता पूर्वक पहुंचाई गई।" },
-            { id: "CASE-2026-005", type: "one-time", problem: "गरीब यतीम बच्ची की शादी हेतु घरेलू सामान एवं आर्थिक राशन किट सहायता उपक्रम।", location: "शास्त्री नगर (जयपुर)", phone: "******1380", status: "delivered", updateLog: "एकमुश्त इमदाद सामग्री सुपुर्द की गई।" }
+        // Unique dynamic styling matrices configuration blocks
+        const colorfulStyleBuckets = [
+            { border: "border-l-4 border-l-emerald-500 border-emerald-100", bg: "bg-emerald-50/20 dark:bg-emerald-950/10", tag: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-teal-400" },
+            { border: "border-l-4 border-l-blue-500 border-blue-100", bg: "bg-blue-50/20 dark:bg-blue-950/10", tag: "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-400" },
+            { border: "border-l-4 border-l-purple-500 border-purple-100", bg: "bg-purple-50/20 dark:bg-purple-950/10", tag: "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400" },
+            { border: "border-l-4 border-l-amber-500 border-amber-100", bg: "bg-amber-50/20 dark:bg-amber-950/10", tag: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-400" },
+            { border: "border-l-4 border-l-rose-500 border-rose-100", bg: "bg-rose-50/20 dark:bg-rose-950/10", tag: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400" },
+            { border: "border-l-4 border-l-teal-500 border-teal-100", bg: "bg-teal-50/20 dark:bg-teal-950/10", tag: "bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-400" }
         ];
 
         let activeCaseFilterCriteria = 'all';
@@ -516,54 +518,82 @@
             grid.innerHTML = html;
         }
 
+        // --- FULLY INTEGRATED REAL-TIME CASES STREAM ENGINE FROM FIREBASE ---
         function renderUserCasesListUiEngine() {
             let targetDiv = document.getElementById("casesListDynamicContainer"); if(!targetDiv) return;
             let rawData = localStorage.getItem("foundationCasesData");
-            let list = rawData ? JSON.parse(rawData) : INTENTIONAL_STATIC_CASES_SEED;
+            let list = rawData ? JSON.parse(rawData) : [];
 
             document.getElementById("cnt-all").innerText = list.length;
-            document.getElementById("cnt-permanent").innerText = list.filter(c => c.type === 'permanent').length;
-            document.getElementById("cnt-occasional").innerText = list.filter(c => c.type === 'occasional' || c.type === 'one-time').length;
-            document.getElementById("cnt-emergency").innerText = list.filter(c => c.type === 'emergency').length;
+            document.getElementById("cnt-permanent").innerText = list.filter(c => c.caseType === 'permanent').length;
+            document.getElementById("cnt-temporary").innerText = list.filter(c => c.caseType === 'temporary').length;
+            document.getElementById("cnt-emergency").innerText = list.filter(c => c.caseType === 'emergency').length;
 
             let filtered = list.filter(c => {
                 if(activeCaseFilterCriteria === 'all') return true;
-                if(activeCaseFilterCriteria === 'occasional') return (c.type === 'occasional' || c.type === 'one-time');
-                return c.type === activeCaseFilterCriteria;
+                return c.caseType === activeCaseFilterCriteria;
             });
 
             if(filtered.length === 0) {
-                targetDiv.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">इस कैटेगरी में वर्तमान में कोई केस रिकॉर्ड दर्ज नहीं है।</p>`;
+                targetDiv.innerHTML = `<p class="text-center text-xs text-gray-400 py-8">इस कैटेगरी में वर्तमान में कोई केस रिकॉर्ड दर्ज नहीं है।</p>`;
                 return;
             }
 
             let htmlString = "";
-            filtered.forEach((c) => {
-                let badgeColor = "bg-gray-100 text-gray-700";
+            filtered.forEach((c, idx) => {
+                let bucket = colorfulStyleBuckets[idx % colorfulStyleBuckets.length];
+                
                 let typeText = "सामान्य केस";
-                if(c.type === 'permanent') { badgeColor = "bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-400"; typeText = "स्थाई मासिक राशन परिवार"; }
-                else if(c.type === 'occasional') { badgeColor = "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-400"; typeText = "सामयिक (Kabhi-Kabhi) केस"; }
-                else if(c.type === 'one-time') { badgeColor = "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400"; typeText = "एक-बारगी वित्तीय सहायता"; }
-                else if(c.type === 'emergency') { badgeColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-400 animate-pulse"; typeText = "🚨 अर्जेंट मेडिकल/आपातकालीन केस"; }
+                if(c.caseType === 'permanent') { typeText = "स्थाई मासिक राशन परिवार"; }
+                else if(c.caseType === 'temporary') { typeText = "अस्थाई सहायता केस"; }
+                else if(c.caseType === 'emergency') { typeText = "🚨 अर्जेंट मेडिकल/आपातकालीन केस"; }
 
                 let step1 = "text-green-600 font-bold", step2 = "text-gray-300", step3 = "text-gray-300";
-                if(c.status === 'dispatch') { step2 = "text-orange-500 font-bold"; }
-                else if(c.status === 'delivered') { step2 = "text-green-600 font-bold"; step3 = "text-emerald-600 font-bold"; }
+                let progressWidth = "33%";
+                let updateMessage = "केस रिकॉर्ड पूर्ण रूप से सत्यापित है।";
+                
+                if(c.status === 'dispatch') { 
+                    step2 = "text-orange-500 font-bold"; 
+                    progressWidth = "66%";
+                    updateMessage = "राहत सामग्री रवानगी मोड पर है।";
+                } else if(c.status === 'delivered') { 
+                    step2 = "text-green-600 font-bold"; 
+                    step3 = "text-emerald-600 font-bold"; 
+                    progressWidth = "100%";
+                    updateMessage = "इस महीने की राहत सामग्री / राशन पहुँचाया जा चुका है।";
+                }
+
+                let displayCaseId = "CASE-" + (c.id ? c.id.replace('case_', '').substring(0, 5).toUpperCase() : Math.floor(1000 + Math.random() * 9000));
+                let maskDisplayPhone = c.mobile && c.mobile !== 'N/A' ? "******" + c.mobile.slice(-4) : "******0000";
+                
+                let totalMembers = c.totalMembers || "N/A";
+                let memberDetails = c.memberDetails || "विवरण उपलब्ध नहीं है";
 
                 htmlString += `
-                <div class="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-3.5 space-y-3 shadow-2xs">
+                <div class="bg-white dark:bg-gray-800 border ${bucket.border} ${bucket.bg} rounded-2xl p-4 space-y-3 shadow-xs">
                     <div class="flex justify-between items-start gap-2">
                         <div>
-                            <span class="text-[10px] font-mono tracking-wider font-bold bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded-md">${c.id}</span>
-                            <span class="ml-1 px-2 py-0.5 rounded-md text-[9px] font-bold ${badgeColor}">${typeText}</span>
+                            <span class="text-[10px] font-mono tracking-wider font-bold bg-slate-900 text-white dark:bg-slate-700 px-2.5 py-0.5 rounded-md">${displayCaseId}</span>
+                            <span class="ml-1 px-2 py-0.5 rounded-md text-[9px] font-bold ${bucket.tag}">${typeText}</span>
                         </div>
                     </div>
                     
                     <div class="text-xs space-y-1.5 leading-relaxed font-medium">
-                        <p class="text-gray-800 dark:text-gray-200"><b class="text-gray-400 font-normal">समस्या विवरण:</b> ${c.problem}</p>
-                        <div class="grid grid-cols-2 gap-2 text-[10px] bg-white dark:bg-slate-950 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
-                            <p class="text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i><b>क्षेत्र:</b> <span class="blur-[3.5px] select-none text-gray-400">छिपा हुआ पता</span> (${c.location})</p>
-                            <p class="text-gray-500"><i class="fa-solid fa-phone mr-1"></i><b>संपर्क:</b> <span class="tracking-widest font-mono text-gray-700 dark:text-gray-300">${c.phone}</span></p>
+                        <p class="text-gray-800 dark:text-gray-200"><b class="text-gray-400 font-normal">समस्या विवरण:</b> ${c.problem || c.description || 'N/A'}</p>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] bg-gray-50 dark:bg-slate-950 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                            <p class="text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i><b>क्षेत्र:</b> <span class="blur-[3.5px] select-none text-gray-400">छिपा हुआ पता</span> (${c.address || 'शास्त्री नगर'})</p>
+                            <p class="text-gray-500"><i class="fa-solid fa-phone mr-1"></i><b>संपर्क:</b> <span class="tracking-widest font-mono text-gray-700 dark:text-gray-300">${maskDisplayPhone}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 dark:bg-slate-950/40 p-2.5 rounded-xl border border-gray-100 dark:border-gray-900 text-[11px] space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400 font-bold uppercase text-[9px]">कुल सदस्य संख्या:</span>
+                            <span class="font-black text-slate-800 dark:text-slate-200"><i class="fa-solid fa-users text-emerald-600 mr-0.5"></i> ${totalMembers} सदस्य</span>
+                        </div>
+                        <div class="mt-1 pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
+                            <span class="text-gray-400 font-bold uppercase block text-[9px] mb-0.5">परिवार के सदस्यों के नाम व विवरण:</span>
+                            <p class="text-xs font-medium text-slate-700 dark:text-slate-300 italic leading-relaxed">${memberDetails}</p>
                         </div>
                     </div>
 
@@ -574,13 +604,13 @@
                             <span class="${step3}"><i class="fa-solid fa-circle-check"></i> सहायता डिलीवर</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-full" style="width: ${c.status==='delivered'?'100%':(c.status==='dispatch'?'66%':'33%')};"></div>
+                            <div class="bg-gradient-to-r from-green-500 to-emerald-600 h-full" style="width: ${progressWidth};"></div>
                         </div>
-                        <p class="text-[9px] italic text-gray-400 flex items-center gap-1"><i class="fa-solid fa-bell text-amber-500 text-[8px]"></i> <b>ताजा अपडेट:</b> ${c.updateLog}</p>
+                        <p class="text-[9px] italic text-gray-400 flex items-center gap-1"><i class="fa-solid fa-bell text-amber-500 text-[8px]"></i> <b>ताजा अपडेट:</b> ${updateMessage}</p>
                     </div>
 
                     <div class="pt-1 flex gap-2">
-                        <button onclick="triggerDirectCaseSponsorshipCall('${c.id}')" class="flex-1 bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-950/50 text-green-700 dark:text-green-400 font-bold py-1.5 rounded-lg text-[11px] border border-green-100 dark:border-green-900/40 flex justify-center items-center gap-1.5 transition">
+                        <button onclick="triggerDirectCaseSponsorshipCall('${displayCaseId}')" class="flex-1 bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-950/50 text-green-700 dark:text-green-400 font-bold py-1.5 rounded-lg text-[11px] border border-green-100 dark:border-green-900/40 flex justify-center items-center gap-1.5 transition">
                             <i class="fa-solid fa-heart-circle-check text-xs"></i> इस केस को स्पॉन्सर करें
                         </button>
                     </div>
@@ -602,7 +632,7 @@
         function triggerDirectCaseSponsorshipCall(caseIdCode) {
             let uData = JSON.parse(localStorage.getItem("foundationUser") || '{"name":"सदस्य"}');
             let msg = `अस्सलामुअलैकुम रहमत-ए-इस्लाम फाउंडेशन, मैं केस कोड *${caseIdCode}* को सीधे तौर पर चंदे/राशन स्वरूप स्पॉन्सर करने में सहयोग प्रदान करना चाहता हूँ। कृपया विवरण बताएं। - ${uData.name}`;
-            window.open("https://wa.me/917976729458?text=" + encodeURIComponent(msg), '_blank');
+            window.open("https://wa.me/917976729458?text= " + encodeURIComponent(msg), '_blank');
         }
 
         function openReportCaseDialogWindow() {
@@ -617,19 +647,17 @@
             document.getElementById("repCaseContact").value = "";
         }
 
-        // --- FIXED: INJECTS APP USER SENDER NAME & MOBILE CRITERIA SECURELY ---
         function submitUserReportedCaseToAdmin() {
             let desc = document.getElementById("repCaseDesc").value.trim();
             let loc = document.getElementById("repCaseLoc").value.trim();
             let cont = document.getElementById("repCaseContact").value.trim();
             if(desc === "" || loc === "") { alert("कृपया विवरण एवं स्थान आवश्यक रूप से भरें।"); return; }
             
-            // local storage se app login user ki info extraction
             let loggedInUserMeta = JSON.parse(localStorage.getItem("foundationUser") || '{"name":"अज्ञात सदस्य","mobile":"0000000000"}');
             
             let reportObject = {
-                reportedByUserName: loggedInUserMeta.name,       // Report karne wale ka naam
-                reportedByUserMobile: loggedInUserMeta.mobile,   // Report karne wale ka number
+                reportedByUserName: loggedInUserMeta.name,       
+                reportedByUserMobile: loggedInUserMeta.mobile,   
                 details: desc,
                 location: loc,
                 contactReference: cont,
@@ -668,7 +696,13 @@
 
         function logout() { localStorage.removeItem("foundationUser"); location.reload(); }
         function joinWhatsApp() { window.open("https://wa.me/917976729458?text=" + encodeURIComponent("रहमत-ए-इस्लाम फाउंडेशन के ग्रुप में जोड़ें।"), '_blank'); }
-        function shareApp() { let appUrl = window.location.href; let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन* 🌙\n_मदद अल्लाह की तरफ़ से_\n\nजयपुर शास्त्री नगर की सबसे पारदर्शी संस्था। चंदे का लाइव हिसाब और राशन वितरण की final reports देखने के लिए नीचे दिए गए लिंक से ऐप ओपन करें:\n\n🔗 *ऐप link:* ${appUrl}`; window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank'); }
+        
+        // --- FIXED BRANDED SHORT URL SHARE LINK ATTACHED ---
+        function shareApp() { 
+            let landingPageUrl = "https://bit.ly/Rahmat-e-Islam-app"; 
+            let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन* 🌙\n_मदद अल्लाह की तरफ़ से_\n\nजयपुर शास्त्री नगर की सबसे पारदर्शी संस्था। चंदे का लाइव हिसाब और राशन वितरण की पूरी जानकारी देखने के लिए संस्था का ऑफिशियल एंड्रॉइड ऐप डाउनलोड करें।\n\n👇 *ऐप डाउनलोड करने के लिए नीचे दिए गए लिंक पर क्लिक करें:* \n${landingPageUrl}`; 
+            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank'); 
+        }
 
         function calculateUserDashboardStats() {
             let history = JSON.parse(localStorage.getItem("history") || "[]");
@@ -811,7 +845,6 @@
 
         window.addEventListener('DOMContentLoaded', () => { loadUser(); });
 
-        // Navigation Controllers
         (function() {
             var tabHistory = ['sect-home']; var tabBtnMap = { 'sect-home': 0, 'sect-latest': 1, 'sect-cases': 2, 'sect-team': 3, 'sect-about': 4 }; var popupOpen = false;
             var _orig = window.switchUserTab || switchUserTab; window.switchUserTab = function(tabId, el) { _orig(tabId, el); if (tabHistory[tabHistory.length - 1] !== tabId) { tabHistory.push(tabId); } };
