@@ -211,6 +211,10 @@
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-5">
                 <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2"><i class="fa-solid fa-cart-shopping text-green-600"></i> राशन खर्च सेक्शन</h2>
                 <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 block">राशन वितरण की तारीख (Manual Date - Optional)</label>
+                        <input id="manualRationDate" type="date" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm dark:[color-scheme:dark]">
+                    </div>
                     <input id="rationMonth" placeholder="महीना (जैसे: अप्रेल, मई)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm">
                     <input id="rationTotal" type="number" placeholder="कुल राशन खर्च ₹ (जैसे: 9600)" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm font-bold">
                     <textarea id="rationItems" placeholder="सामान ख़रीदा विवरण...&#10;1. 3200/- आटा 100kg&#10;2. 1170/- चीनी 25kg" class="w-full p-2.5 bg-gray-50 dark:bg-gray-900 border rounded-lg outline-none text-sm h-24 resize-none"></textarea>
@@ -459,7 +463,6 @@
             }
 
             window.deleteUserReportedCaseFromCloudServer = async function(docId) {
-                // Secure Master Key protection layer injected for Reported cases dashboard
                 if (prompt("डेटा मिटाने के लिए Master Key दर्ज करें:") === "@Akp889900") {
                     try {
                         await deleteDoc(doc(db, "userReportedCases", docId));
@@ -598,7 +601,7 @@
             save();
             renderCasesList();
             clearCaseForm();
-            showToast("✅ नया定位केस सुरक्षित कर दिया गया");
+            showToast("✅ नया केस सुरक्षित कर दिया गया");
         }
 
         function editCase(index) {
@@ -710,6 +713,8 @@
             targetList.forEach((c, index) => {
                 let primaryIndex = casesList.findIndex(originalItem => originalItem.id === c.id);
                 
+                let displayCaseId = "CASE-" + (c.id ? c.id.replace('case_', '').slice(-5).toUpperCase() : Math.floor(10000 + Math.random() * 90000));
+                
                 let logBadges = c.logs && c.logs.length > 0 ? c.logs.map((l, lIdx) => `
                     <span onclick="modifySpecificRationLog(${primaryIndex}, ${lIdx})" class="cursor-pointer bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300 text-[10px] font-bold px-2 py-0.5 rounded-md border border-green-200/40 inline-flex items-center gap-1 hover:bg-yellow-100 dark:hover:bg-yellow-950 transition-all">
                         ${l.month} (${l.date}) <i class="fa-solid fa-pen-to-square text-[8px] opacity-60"></i>
@@ -732,6 +737,7 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="space-y-1 flex-1">
                             <span class="text-[9px] font-extrabold uppercase tracking-wider bg-gray-100 dark:bg-gray-900 px-2.5 py-0.5 rounded-full border border-gray-200 dark:border-gray-700 inline-block text-gray-600 dark:text-gray-400">${categoryHeaders[c.caseType || 'general']}</span>
+                            <span class="text-[10px] font-mono text-slate-500 font-bold ml-1">${displayCaseId}</span>
                             <h3 class="font-bold text-base text-green-900 dark:text-green-400">${c.name}</h3>
                             <p class="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-2 pt-0.5">
                                 <span><b>📞 फ़ोन:</b> ${c.mobile}</span> 
@@ -794,7 +800,6 @@
                     showToast("✏️ महीना सफलतापूर्वक संशोधित हुआ");
                 }
             } else if(actionType === 'DELETE' || actionType === 'D') {
-                // Secure key integration enforced on inside row element action hooks
                 if (prompt("इस राशन लॉग को मिटाने के लिए Master Key दर्ज करें:") === "@Akp889900") {
                     casesList[caseIdx].logs.splice(logIdx, 1);
                     save();
@@ -807,7 +812,6 @@
         }
 
         function deleteCase(index) {
-            // Enhanced Protection Layer with Master Key Enforcer Verification
             if(prompt("इस केस को हमेशा के लिए डिलीट करने के लिए Master Key दर्ज करें:") === "@Akp889900") {
                 casesList.splice(index, 1);
                 save();
@@ -876,10 +880,9 @@
         }
 
         function shareAdminApp() {
-    // Purana replace system hata kar seedhe aapki short link set kar di hai
-    let landingPageUrl = "https://bit.ly/Rahmat-e-Islam-app";
-    let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन (एडमिन पोर्टल)* 🌙\n\nसंस्था के ट्रस्टी मेंबर्स और मैनेजमेंट के उपयोग के लिए ऑफिशियल एंड्रॉइड ऐप का वेब डाउनलोड पेज। नीचे दिए गए लिंक से ऐप डाउनलोड कर सकते हैं:\n\n👇 *ऑफिशियल डाउनलोड लिंक:* \n${landingPageUrl}`;
-    window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
+            let landingPageUrl = "https://bit.ly/Rahmat-e-Islam-app";
+            let text = `🌙 *रहमत-ए-इस्लाम फाउंडेशन (एडमिन पोर्टल)* 🌙\n\nसंस्था के ट्रस्टी मेंबर्स और मैनेजमेंट के उपयोग के लिए ऑफिशियल एंड्रॉइड ऐप का वेब डाउनलोड पेज। नीचे दिए गए लिंक से ऐप डाउनलोड कर सकते हैं:\n\n👇 *ऑफिशियल डाउनलोड लिंक:* \n${landingPageUrl}`;
+            window.open("https://wa.me/?text=" + encodeURIComponent(text), '_blank');
         }
 
         function publishNotice(shouldShow) {
@@ -931,7 +934,6 @@
         function editEntry(i){ let val = prompt("नया रकम डालें", data[i].amount); if(val){ data[i].amount = Number(val); save(); renderPreview(); updateReportPreview(); showToast("✅ अपडेट हो गई"); } }
         
         function deleteEntry(i) { 
-            // Secure Key Integration for Home tab live data entries deletion
             if(prompt("इस एंट्री को मिटाने के लिए Master Key दर्ज करें:") === "@Akp889900") {
                 data.splice(i, 1); 
                 save(); 
@@ -1065,8 +1067,15 @@
 
             if(!totalKits || !total || !kitPrice) return showToast("⚠️ पहले राशन जानकारी भरें");
 
-            let today = new Date();
-            let dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+            let manualDate = document.getElementById("manualRationDate")?.value;
+            let dateText = "";
+            if (manualDate) {
+                let d = new Date(manualDate);
+                dateText = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
+            } else {
+                let today = new Date();
+                dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+            }
 
             let report = `*रहमत-ए-इस्लाम फाउंडेशन*
     मदद अल्लाह की तरफ़ से 
@@ -1100,8 +1109,15 @@ ${kitItems}
 
             if(!totalKits || !total || !kitPrice) return showToast("⚠️ जानकारी खाली है");
 
-            let today = new Date();
-            let dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+            let manualDate = document.getElementById("manualRationDate")?.value;
+            let dateText = "";
+            if (manualDate) {
+                let d = new Date(manualDate);
+                dateText = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
+            } else {
+                let today = new Date();
+                dateText = `${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getFullYear()).slice(-2)}`;
+            }
 
             let report = `*रहमत-ए-इस्लाम फाउंडेशन*
     मदद अल्लाह की तरफ़ से 
@@ -1200,7 +1216,6 @@ ${kitItems}
         }
 
         function deleteHistoryItem(i) { 
-            // Secure Enforcer Prompt Integrated for Report History list arrays elements removal
             if(prompt("इस हिस्ट्री रिपोर्ट रिकॉर्ड को मिटाने के लिए Master Key दर्ज करें:") === "@Akp889900") {
                 if(currentHistoryTab === 'donation') history.splice(i,1); else rationHistory.splice(i,1); 
                 save(); 
@@ -1223,8 +1238,62 @@ ${kitItems}
             themeIcon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-lg text-yellow-400" : "fa-solid fa-moon text-lg";
         }
         
-        function exportBackup() { let blob = new Blob([JSON.stringify({ data, history, rationHistory, foundationCases: casesList })], {type:"application/json"}); let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "rahmat_backup.json"; a.click(); }
-        function importBackup(e) { let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = function(ev){ try { let b = JSON.parse(ev.target.result); data=b.data||[]; history=b.history||[]; rationHistory=b.rationHistory||[]; casesList=b.foundationCases||[]; save(); renderPreview(); renderCasesList(); showToast("✅ Data Restored"); }catch{ showToast("❌ Error"); } }; r.readAsText(f); }
+        function exportBackup() { 
+            let backupData = { 
+                data: data, 
+                history: history, 
+                rationHistory: rationHistory, 
+                foundationCases: casesList,
+                adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
+                flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
+            };
+            let blob = new Blob([JSON.stringify(backupData)], {type:"application/json"}); 
+            let a = document.createElement("a"); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = "rahmat_backup.json"; 
+            a.click(); 
+        }
+        
+        function importBackup(e) { 
+            let f = e.target.files[0]; 
+            if(!f) return; 
+            let r = new FileReader(); 
+            r.onload = function(ev){ 
+                try { 
+                    let b = JSON.parse(ev.target.result); 
+                    data = b.data || []; 
+                    history = b.history || []; 
+                    rationHistory = b.rationHistory || []; 
+                    casesList = b.foundationCases || []; 
+                    
+                    localStorage.setItem("data", JSON.stringify(data));
+                    localStorage.setItem("history", JSON.stringify(history));
+                    localStorage.setItem("rationHistory", JSON.stringify(rationHistory));
+                    localStorage.setItem("foundationCases", JSON.stringify(casesList));
+                    
+                    if(b.adminLiveState) {
+                        localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
+                        if(document.getElementById("prev")) document.getElementById("prev").value = b.adminLiveState.prev || 0;
+                        if(document.getElementById("expense")) document.getElementById("expense").value = b.adminLiveState.expense || 0;
+                    }
+                    if(b.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
+
+                    save(); 
+                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud(); 
+                    
+                    renderPreview(); 
+                    renderCasesList(); 
+                    updateReportPreview();
+                    if(typeof renderHistory === 'function') renderHistory();
+                    
+                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Local + Firebase) हो गया"); 
+                } catch(err){ 
+                    showToast("❌ बैकअप फाइल में गड़बड़ी है"); 
+                } 
+            }; 
+            r.readAsText(f); 
+            e.target.value = ''; 
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             renderPreview();

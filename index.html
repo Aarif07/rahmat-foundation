@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Rahmat-e-Islam Foundation</title>
     
-    <link class="manifest" href="manifest.json">
+    <link class="manifest" href="manifest.json?v=1.2">
     <meta name="theme-color" content="#0b4f2f">
     <link class="apple-touch-icon" href="logo.png">
 
@@ -289,7 +293,7 @@
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                         <div class="text-red-500 text-lg mb-1"><i class="fa-solid fa-notes-medical"></i></div>
                         <h4 class="font-bold text-xs">चिकित्सा सहायता</h4>
-                        <p class="text-[10px] text-gray-400 mt-1">बीमारी, दवाइयों and इमरजेंसी हालात में आर्थिक सहायता।</p>
+                        <p class="text-[10px] text-gray-400 mt-1">बीमारी, दवाइयों और इमरजेंसी हालात में आर्थिक सहायता।</p>
                     </div>
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                         <div class="text-blue-600 text-lg mb-1"><i class="fa-solid fa-hand-holding-heart"></i></div>
@@ -433,7 +437,6 @@
                 if(snap.exists()) { let d = snap.data(); if(d.requests) localStorage.setItem("pendingVerifications", JSON.stringify(d.requests)); }
             });
 
-            // --- FIXED PATH BOUND: DATABASE SYNC CAPTURED DIRECTLY FROM REAL MASTER LOG NODE ---
             onSnapshot(doc(db, "cloudAppData", "masterRecord"), (docSnap) => {
                 if (docSnap.exists()) {
                     let cloudData = docSnap.data();
@@ -511,7 +514,6 @@
             grid.innerHTML = html;
         }
 
-        // --- DYNAMIC RENDERING ALIGNMENT SCHEME: FIXED 0 QUANTITY COUNTER ERRORS ---
         function renderUserCasesListUiEngine() {
             let targetDiv = document.getElementById("casesListDynamicContainer"); if(!targetDiv) return;
             let rawData = localStorage.getItem("foundationCasesData");
@@ -535,7 +537,7 @@
             let htmlString = "";
             filtered.forEach((c, idx) => {
                 let caseType = (c.caseType || 'permanent').toLowerCase();
-                let bucket = colorfulStyleBuckets[0]; // fallback
+                let bucket = colorfulStyleBuckets[0]; 
                 
                 if (caseType === 'temporary') { bucket = colorfulStyleBuckets[1]; } 
                 else if (caseType === 'emergency') { bucket = colorfulStyleBuckets[2]; }
@@ -555,7 +557,7 @@
                     updateMessage = "इस महीने की राहत सामग्री / राशन पहुँचाया जा चुका है।";
                 }
 
-                let displayCaseId = "CASE-" + (c.id ? c.id.replace('case_', '').substring(0, 5).toUpperCase() : Math.floor(1000 + Math.random() * 9000));
+                let displayCaseId = "CASE-" + (c.id ? c.id.replace('case_', '').slice(-5).toUpperCase() : Math.floor(10000 + Math.random() * 90000));
                 let maskDisplayPhone = c.mobile && c.mobile !== 'N/A' ? "******" + c.mobile.slice(-4) : "******0000";
                 
                 let totalMembers = c.totalMembers || "N/A";
@@ -697,7 +699,6 @@
 
         function calculateUserDashboardStats() {
             let history = JSON.parse(localStorage.getItem("history") || "[]");
-            let rationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
             let data = JSON.parse(localStorage.getItem("data") || "[]");
             let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
 
@@ -710,62 +711,64 @@
 
             if (history && history.length > 0) {
                 let latestReportItem = history[0]; 
-                let reportText = latestReportItem.report || "";
+                let reportText = (latestReportItem.report || "").replace(/,/g, '');
                 
                 let monthMatch = reportText.match(/(?:महीना|महिना|Month)\s*[-:=📅`*₹\s]+([^\n📅`*₹]+)/i);
                 if (monthMatch && monthMatch[1] && monthBadge) {
                     monthBadge.innerText = monthMatch[1].trim(); monthBadge.classList.remove("hidden");
                 }
 
-                let thisMonthMatch = reportText.match(/तक जमा रक़म\s*=\s*(\d+)/i) || reportText.match(/तक जमा रक़म\s*=\s*₹?\s*(\d+)/i);
+                let thisMonthMatch = reportText.match(/तक जमा रक़म\s*=\s*(\d+)/i);
                 if(thisMonthMatch && thisMonthMatch[1]) extractedThisMonthDonationsText = Number(thisMonthMatch[1]);
 
-                let expenseMatch = reportText.match(/राशन का कुल खर्च हुआ\s*=\s*(\d+)/i) || reportText.match(/राशन का कुल खर्च हुआ\s*=\s*₹?\s*(\d+)/i);
+                let expenseMatch = reportText.match(/खर्च हुआ\s*=\s*(\d+)/i);
                 if(expenseMatch && expenseMatch[1]) extractedCurrentMonthExpenseText = Number(expenseMatch[1]);
 
-                let netMatch = reportText.match(/कुल बची रक़म\s*=\s*(\d+)/i) || reportText.match(/कुल बची रक़म\s*=\s*₹?\s*(\d+)/i);
+                let netMatch = reportText.match(/कुल बची रक़म\s*=\s*(\d+)/i);
                 if(netMatch && netMatch[1]) extractedNetRemainingBalText = Number(netMatch[1]);
 
-                let prevMatch = reportText.match(/पिछले महीने तक जमा बची रक़म\s*=\s*(\d+)/i) || reportText.match(/पिछले महीने तक जमा बची रक़म\s*=\s*₹?\s*(\d+)/i);
+                let prevMatch = reportText.match(/पिछले महीने तक जमा बची रक़म\s*=\s*(\d+)/i);
                 if(prevMatch && prevMatch[1]) extractedPrevBalFromLastReportText = Number(prevMatch[1]);
 
-                document.getElementById("user-current-income").innerText = `₹ ${extractedThisMonthDonationsText}`;
-                document.getElementById("user-current-expense").innerText = `₹ ${extractedCurrentMonthExpenseText}`;
-                document.getElementById("user-previous-balance").innerText = `₹ ${extractedPrevBalFromLastReportText}`;
-                document.getElementById("user-net-balance").innerText = `₹ ${extractedNetRemainingBalText}`;
+                document.getElementById("user-current-income").innerText = `₹ ${extractedThisMonthDonationsText.toLocaleString('en-IN')}`;
+                document.getElementById("user-current-expense").innerText = `₹ ${extractedCurrentMonthExpenseText.toLocaleString('en-IN')}`;
+                document.getElementById("user-previous-balance").innerText = `₹ ${extractedPrevBalFromLastReportText.toLocaleString('en-IN')}`;
+                document.getElementById("user-net-balance").innerText = `₹ ${extractedNetRemainingBalText.toLocaleString('en-IN')}`;
             } else {
                 let liveDataSum = data.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
                 let adminPrevBal = Number(adminLiveState.prev || 0); 
                 let adminExp = Number(adminLiveState.expense || 0);
                 let netLiveBal = (liveDataSum + adminPrevBal) - adminExp;
                 
-                document.getElementById("user-current-income").innerText = `₹ ${liveDataSum}`;
-                document.getElementById("user-current-expense").innerText = `₹ ${adminExp}`;
-                document.getElementById("user-previous-balance").innerText = `₹ ${adminPrevBal}`;
-                document.getElementById("user-net-balance").innerText = `₹ ${netLiveBal}`;
+                document.getElementById("user-current-income").innerText = `₹ ${liveDataSum.toLocaleString('en-IN')}`;
+                document.getElementById("user-current-expense").innerText = `₹ ${adminExp.toLocaleString('en-IN')}`;
+                document.getElementById("user-previous-balance").innerText = `₹ ${adminPrevBal.toLocaleString('en-IN')}`;
+                document.getElementById("user-net-balance").innerText = `₹ ${netLiveBal.toLocaleString('en-IN')}`;
             }
 
+            // --- STRICT ALL-TIME CALCULATION LOGIC (Only from Main Donation History) ---
             let totalHistoricDonationsSumTotal = 0;
-            history.forEach(h => {
-                let incMatch = h.report.match(/जमा रक़म\s*=\s*(\d+)/) || h.report.match(/जमा रक़म\s*=\s*₹?\s*(\d+)/);
-                if (incMatch && incMatch[1]) totalHistoricDonationsSumTotal += Number(incMatch[1]);
-            });
-
             let totalHistoricExpensesSumTotal = 0;
-            rationHistory.forEach(r => {
-                let expMatch = r.report.match(/कुल खर्चा हुआ\s*=\s*₹?\s*(\d+)/) || r.report.match(/कुल खर्चा\s*=\s*₹?\s*(\d+)/) || r.report.match(/कुल खर्चा हुआ\s*=\s*(\d+)/);
+
+            history.forEach(h => {
+                let reportText = (h.report || "").replace(/,/g, '');
+                
+                let incMatch = reportText.match(/तक जमा रक़म\s*=\s*(\d+)/i);
+                if (incMatch && incMatch[1]) totalHistoricDonationsSumTotal += Number(incMatch[1]);
+
+                let expMatch = reportText.match(/खर्च हुआ\s*=\s*(\d+)/i);
                 if (expMatch && expMatch[1]) totalHistoricExpensesSumTotal += Number(expMatch[1]);
             });
 
             let currentMonthIncomeLive = data.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
-            let currentMonthExpenseLive = history.length > 0 ? 0 : Number(adminLiveState.expense || 0);
+            let currentMonthExpenseLive = Number(adminLiveState.expense || 0);
 
-            let grandTotalIncome = totalHistoricDonationsSumTotal + (history.length > 0 ? 0 : currentMonthIncomeLive);
+            let grandTotalIncome = totalHistoricDonationsSumTotal + currentMonthIncomeLive;
             let grandTotalExpenses = totalHistoricExpensesSumTotal + currentMonthExpenseLive;
 
             if(document.getElementById("user-total-income")) {
-                document.getElementById("user-total-income").innerText = `₹ ${grandTotalIncome}`;
-                document.getElementById("user-total-expense").innerText = `₹ ${grandTotalExpenses}`;
+                document.getElementById("user-total-income").innerText = `₹ ${grandTotalIncome.toLocaleString('en-IN')}`;
+                document.getElementById("user-total-expense").innerText = `₹ ${grandTotalExpenses.toLocaleString('en-IN')}`;
             }
         }
 
