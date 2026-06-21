@@ -10,13 +10,26 @@
     <link class="apple-touch-icon" href="logo.png">
 
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker Registered Successfully'))
-            .catch(err => console.log('Service Worker Setup Error', err));
-        });
-      }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        // 1. Force server check on every load
+        reg.update();
+        
+        // 2. Naya update aate hi automatic detect karna
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // 3. Jaise hi GitHub par naya code aayega, App automatic cache clear karke refresh ho jayega
+              console.log('Naya Update Aa Gaya Hai! Auto-Refreshing...');
+              window.location.reload(true);
+            }
+          };
+        };
+      }).catch(err => console.log('Service Worker Setup Error', err));
+    });
+  }
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
