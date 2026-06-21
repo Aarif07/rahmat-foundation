@@ -698,7 +698,7 @@
             if(counterBadge) counterBadge.innerText = `${targetList.length} घर`;
 
             if(targetList.length === 0) {
-                container.innerHTML = '<p class="text-center text-xs text-gray-400 py-6 bg-gray-50 dark:bg-gray-900/20 rounded-xl border border-dashed dark:border-gray-800">कोई रिकॉर्ड इस श्रेणी / राशन फिल्टर में उपलब्ध नहीं है।</p>';
+                container.innerHTML = '<p class="text-center text-xs text-gray-400 py-6 bg-gray-50 dark:bg-gray-900/20 rounded-xl border border-dashed dark:border-gray-800">कोई रिकॉर्ड इस श्रेणी / राशन फिल्टर में उपलब्ध नहीं है。</p>';
                 return;
             }
 
@@ -1254,45 +1254,64 @@ ${kitItems}
             a.click(); 
         }
         
-        function importBackup(e) { 
-            let f = e.target.files[0]; 
-            if(!f) return; 
-            let r = new FileReader(); 
-            r.onload = function(ev){ 
-                try { 
-                    let b = JSON.parse(ev.target.result); 
-                    data = b.data || []; 
-                    history = b.history || []; 
-                    rationHistory = b.rationHistory || []; 
-                    casesList = b.foundationCases || []; 
-                    
-                    localStorage.setItem("data", JSON.stringify(data));
-                    localStorage.setItem("history", JSON.stringify(history));
-                    localStorage.setItem("rationHistory", JSON.stringify(rationHistory));
-                    localStorage.setItem("foundationCases", JSON.stringify(casesList));
-                    
+        // --- SMART MERGE LOGIC ---
+        function importBackup(e) {
+            let f = e.target.files[0];
+            if(!f) return;
+            let r = new FileReader();
+            r.onload = function(ev){
+                try {
+                    let b = JSON.parse(ev.target.result);
+
+                    // 1. Merge Cases (Purane cases delete nahi honge)
+                    let importedCases = b.foundationCases || [];
+                    importedCases.forEach(ic => {
+                        let exists = casesList.find(c => c.id === ic.id);
+                        if(!exists) casesList.push(ic);
+                    });
+
+                    // 2. Merge Donation History
+                    let importedHist = b.history || [];
+                    importedHist.forEach(ih => {
+                        let exists = history.find(h => h.id === ih.id || (h.report === ih.report));
+                        if(!exists) history.push(ih);
+                    });
+                    history.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    // 3. Merge Ration History
+                    let importedRat = b.rationHistory || [];
+                    importedRat.forEach(ir => {
+                        let exists = rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
+                        if(!exists) rationHistory.push(ir);
+                    });
+                    rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    // 4. Merge Data (Current month entries)
+                    let importedData = b.data || [];
+                    if(importedData.length > 0) data = importedData;
+
+                    // 5. Merge Live State
                     if(b.adminLiveState) {
                         localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
                         if(document.getElementById("prev")) document.getElementById("prev").value = b.adminLiveState.prev || 0;
                         if(document.getElementById("expense")) document.getElementById("expense").value = b.adminLiveState.expense || 0;
                     }
-                    if(b.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
 
-                    save(); 
-                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud(); 
-                    
-                    renderPreview(); 
-                    renderCasesList(); 
+                    save();
+                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
+
+                    renderPreview();
+                    renderCasesList();
                     updateReportPreview();
                     if(typeof renderHistory === 'function') renderHistory();
-                    
-                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Local + Firebase) हो गया"); 
-                } catch(err){ 
-                    showToast("❌ बैकअप फाइल में गड़बड़ी है"); 
-                } 
-            }; 
-            r.readAsText(f); 
-            e.target.value = ''; 
+
+                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Merge) हो गया! कोई पुराना डेटा डिलीट नहीं हुआ।");
+                } catch(err){
+                    showToast("❌ बैकअप फाइल में गड़बड़ी है");
+                }
+            };
+            r.readAsText(f);
+            e.target.value = '';
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1303,7 +1322,6 @@ ${kitItems}
             if(document.getElementById("expense")) document.getElementById("expense").value = liveState.expense || 0;
         });
 
-        // ── Back Navigation System ─────────────────────────────────────────
         (function() {
             var currentTab = 'tab-home';
             var popupOpen = false;
