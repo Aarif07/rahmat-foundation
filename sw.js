@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rahmat-foundation-offline-v14';
+const CACHE_NAME = 'rahmat-foundation-offline-v15';
 
 const urlsToCache = [
   '/rahmat-foundation/',
