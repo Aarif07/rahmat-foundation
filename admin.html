@@ -278,12 +278,11 @@
             </div>
 
             <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 mb-4">
-    <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-database text-blue-500"></i> डेटा Management</h3>
-    <div class="grid grid-cols-1 gap-2">
-        <button onclick="openExternalBackup()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 shadow-md transition-all">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Backup & Restore Manager खोलें
-        </button>
-    </div>
+                <h3 class="font-bold text-sm mb-3">डेटा Management</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportBackup()" class="bg-yellow-500 text-white p-2.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-export"></i> Backup Save</button>
+                    <label class="bg-green-600 text-white p-2.5 rounded-lg text-xs font-bold text-center cursor-pointer"><i class="fa-solid fa-file-import"></i> Restore Data<input type="file" id="importFile" onchange="importBackup(event)" class="hidden"></label>
+                </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4 space-y-3">
@@ -312,14 +311,6 @@
         <button onclick="switchTab('tab-ration', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-cart-shopping text-lg mb-0.5"></i><span class="text-[9px]">राशन</span></button>
         <button onclick="switchTab('tab-settings', this)" class="nav-item flex flex-col items-center text-gray-400 w-12"><i class="fa-solid fa-gear text-lg mb-0.5"></i><span class="text-[9px]">सेटिंग</span></button>
     </nav>
-
-    <script>
-func<script>
-function openExternalBackup() {
-    var url = "intent://aarif07.github.io/rahmat-foundation/backup.html#Intent;scheme=https;action=android.intent.action.VIEW;end";
-    window.location.href = url;
-}
-    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
