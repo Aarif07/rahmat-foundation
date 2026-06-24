@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foundation Backup Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; padding: 20px; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #15803d; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; opacity: 0; transition: 0.4s; z-index: 9999; text-align: center; width: 90%; max-width: 400px; font-weight: bold; }
+        #toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+    <div id="toast"></div>
+
+    <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-md text-center border border-gray-100">
+        <h1 class="text-xl font-bold text-green-800 mb-2"><i class="fa-solid fa-cloud"></i> सुरक्षित बैकअप और रीस्टोर</h1>
+        <p class="text-[11px] text-gray-500 mb-6 font-semibold">नया डेटा अपलोड करने पर आपका पुराना डेटा सुरक्षित रहेगा और नया डेटा उसमें जुड़ (Merge) जाएगा।</p>
+        
+        <div id="loading" class="text-sm text-blue-600 font-bold mb-4 animate-pulse bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> क्लाउड से डेटा कनेक्ट हो रहा है...
+        </div>
+
+        <div class="grid grid-cols-1 gap-4" id="actionButtons" style="display:none;">
+            <button onclick="exportBackup()" class="bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl text-sm font-bold shadow-md transition-all flex justify-center items-center gap-2">
+                <i class="fa-solid fa-file-export text-lg"></i> डेटा बैकअप (Download) करें
+            </button>
+            <label class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-2xl text-sm font-bold text-center cursor-pointer shadow-md transition-all flex justify-center items-center gap-2">
+                <i class="fa-solid fa-file-import text-lg"></i> नया डेटा रीस्टोर (Upload) करें
+                <input type="file" id="importFile" onchange="importBackup(event)" class="hidden" accept=".json">
+            </label>
+        </div>
+        
+        <button onclick="window.close()" class="mt-8 text-sm text-red-500 font-bold bg-red-50 hover:bg-red-100 transition px-4 py-2 rounded-lg">बंद करें / वापस जाएं</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
+            authDomain: "rahmat-foundation.firebaseapp.com", 
+            projectId: "rahmat-foundation", 
+            storageBucket: "rahmat-foundation.firebasestorage.app", 
+            messagingSenderId: "1000128409503", 
+            appId: "1:1000128409503:web:94173d012d4aace1a7d7aa", 
+            measurementId: "G-J6PPRSZ6P6" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = initializeFirestore(app, { localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}) });
+
+        // Global Storage Variables
+        window.data = []; window.history = []; window.rationHistory = []; window.casesList = [];
+
+        function showToast(m) { let t = document.getElementById("toast"); t.innerText = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3500); }
+        window.showToast = showToast;
+
+        async function loadFromFirebaseCloud() {
+            try {
+                // 8-second Timeout Fail-safe (agar internet slow ho)
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000));
+                const fetchTask = getDoc(doc(db, "cloudAppData", "masterRecord"));
+                
+                let docSnap = await Promise.race([fetchTask, timeout]);
+
+                if (docSnap.exists()) {
+                    let cloudData = docSnap.data();
+                    window.data = cloudData.data || [];
+                    window.history = cloudData.history || [];
+                    window.rationHistory = cloudData.rationHistory || [];
+                    window.casesList = cloudData.foundationCases || [];
+                    
+                    localStorage.setItem("data", JSON.stringify(window.data));
+                    localStorage.setItem("history", JSON.stringify(window.history));
+                    localStorage.setItem("rationHistory", JSON.stringify(window.rationHistory));
+                    localStorage.setItem("foundationCases", JSON.stringify(window.casesList));
+                    
+                    if(cloudData.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(cloudData.adminLiveState));
+                    if(cloudData.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(cloudData.flashNoticeState));
+                    
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("actionButtons").style.display = "grid";
+                    showToast("✅ सिस्टम तैयार है! डेटा सिंक हो गया।");
+                } else {
+                    throw new Error("No data found");
+                }
+            } catch(e) { 
+                // Error aane par bhi system nahi rukega, local storage se kaam chalayega
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("actionButtons").style.display = "grid";
+                showToast("⚠️ क्लाउड कनेक्ट नहीं हुआ (ऑफ़लाइन)। आप फिर भी बैकअप ले सकते हैं।");
+            }
+        }
+
+        async function syncToFirebaseCloud() {
+            try {
+                document.getElementById("loading").style.display = "block";
+                document.getElementById("loading").innerHTML = "<i class='fa-solid fa-cloud-arrow-up fa-bounce mr-2'></i> डेटा क्लाउड पर सेव हो रहा है...";
+                document.getElementById("actionButtons").style.display = "none";
+                
+                let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
+                let flashState = JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}');
+
+                await setDoc(doc(db, "cloudAppData", "masterRecord"), {
+                    data: window.data,
+                    history: window.history,
+                    rationHistory: window.rationHistory,
+                    foundationCases: window.casesList,
+                    adminLiveState: adminLiveState,
+                    flashNoticeState: flashState,
+                    lastUpdated: new Date().toISOString()
+                });
+                
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("actionButtons").style.display = "grid";
+                showToast("🎉 नया डेटा सफलतापूर्वक सेव हो गया! अब आप ऐप में वापस जा सकते हैं।");
+            } catch(e) { 
+                showToast("❌ क्लाउड पर सेव करने में समस्या आई। इंटरनेट कनेक्शन चेक करें।");
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("actionButtons").style.display = "grid";
+            }
+        }
+        window.syncToFirebaseCloud = syncToFirebaseCloud;
+
+        window.onload = loadFromFirebaseCloud;
+    </script>
+
+    <script>
+        // Backup Download Function
+        function exportBackup() { 
+            let backupData = { 
+                data: window.data || [], 
+                history: window.history || [], 
+                rationHistory: window.rationHistory || [], 
+                foundationCases: window.casesList || [],
+                adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
+                flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
+            };
+            let blob = new Blob([JSON.stringify(backupData)], {type:"application/json"}); 
+            let a = document.createElement("a"); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = "rahmat_foundation_backup.json"; 
+            a.click(); 
+            window.showToast("✅ बैकअप फ़ाइल डाउनलोड हो गई!");
+        }
+        
+        // Restore Upload Function (Smart Merge Logic)
+        function importBackup(e) {
+            let f = e.target.files[0];
+            if(!f) return;
+            let r = new FileReader();
+            r.onload = function(ev){
+                try {
+                    let b = JSON.parse(ev.target.result);
+
+                    // 1. Merge Foundation Cases
+                    let importedCases = b.foundationCases || [];
+                    importedCases.forEach(ic => {
+                        let exists = window.casesList.find(c => c.id === ic.id);
+                        if(!exists) window.casesList.push(ic);
+                    });
+
+                    // 2. Merge Donation History
+                    let importedHist = b.history || [];
+                    importedHist.forEach(ih => {
+                        let exists = window.history.find(h => h.id === ih.id || (h.report === ih.report));
+                        if(!exists) window.history.push(ih);
+                    });
+                    window.history.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    // 3. Merge Ration History
+                    let importedRat = b.rationHistory || [];
+                    importedRat.forEach(ir => {
+                        let exists = window.rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
+                        if(!exists) window.rationHistory.push(ir);
+                    });
+                    window.rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    // 4. Update Current Month Data
+                    let importedData = b.data || [];
+                    if(importedData.length > 0) window.data = importedData;
+
+                    // 5. Restore Live State
+                    if(b.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
+                    if(b.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
+                    
+                    // Save to Local Storage First
+                    localStorage.setItem("data", JSON.stringify(window.data));
+                    localStorage.setItem("history", JSON.stringify(window.history));
+                    localStorage.setItem("rationHistory", JSON.stringify(window.rationHistory));
+                    localStorage.setItem("foundationCases", JSON.stringify(window.casesList));
+
+                    // Sync Merged Data to Firebase Cloud
+                    window.syncToFirebaseCloud();
+
+                } catch(err){
+                    window.showToast("❌ बैकअप फाइल में गड़बड़ी है! कृपया सही JSON फाइल चुनें।");
+                }
+            };
+            r.readAsText(f);
+            e.target.value = ''; // Reset input to allow re-uploading the same file if needed
+        }
+    </script>
+</body>
+</html>
