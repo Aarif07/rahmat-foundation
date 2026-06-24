@@ -36,9 +36,25 @@
         <button onclick="window.close()" class="mt-8 text-sm text-red-500 font-bold bg-red-50 hover:bg-red-100 transition px-4 py-2 rounded-lg">बंद करें / वापस जाएं</button>
     </div>
 
+    <script>
+        window.emergencyTimer = setTimeout(function() {
+            var loader = document.getElementById("loading");
+            if (loader && loader.style.display !== "none") {
+                loader.style.display = "none";
+                document.getElementById("actionButtons").style.display = "grid";
+                var t = document.getElementById("toast");
+                t.innerText = "⚠️ सर्वर रेस्पॉन्स नहीं दे रहा है। आप ऑफलाइन बैकअप/रीस्टोर कर सकते हैं।";
+                t.style.backgroundColor = "#b91c1c"; // Red warning color
+                t.classList.add("show");
+                setTimeout(function(){ t.classList.remove("show"); }, 4000);
+            }
+        }, 7000); // 7 second baad force open
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // Yahan se persistent cache hata diya gaya hai taaki lock ki problem na aaye
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
@@ -50,20 +66,32 @@
             measurementId: "G-J6PPRSZ6P6" 
         };
         
-        const app = initializeApp(firebaseConfig);
-        const db = initializeFirestore(app, { localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()}) });
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app); // Direct aur simple connection
+        } catch(err) {
+            console.error("Firebase init failed:", err);
+        }
 
         // Global Storage Variables
         window.data = []; window.history = []; window.rationHistory = []; window.casesList = [];
 
-        function showToast(m) { let t = document.getElementById("toast"); t.innerText = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3500); }
+        function showToast(m, isError = false) { 
+            let t = document.getElementById("toast"); 
+            t.innerText = m; 
+            t.style.backgroundColor = isError ? "#b91c1c" : "#15803d";
+            t.classList.add("show"); 
+            setTimeout(() => t.classList.remove("show"), 3500); 
+        }
         window.showToast = showToast;
 
         async function loadFromFirebaseCloud() {
             try {
-                // 8-second Timeout Fail-safe (agar internet slow ho)
-                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000));
+                if(!db) throw new Error("DB Error");
+
                 const fetchTask = getDoc(doc(db, "cloudAppData", "masterRecord"));
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 6000));
                 
                 let docSnap = await Promise.race([fetchTask, timeout]);
 
@@ -82,6 +110,7 @@
                     if(cloudData.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(cloudData.adminLiveState));
                     if(cloudData.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(cloudData.flashNoticeState));
                     
+                    clearTimeout(window.emergencyTimer); // Success hone par emergency timer rok do
                     document.getElementById("loading").style.display = "none";
                     document.getElementById("actionButtons").style.display = "grid";
                     showToast("✅ सिस्टम तैयार है! डेटा सिंक हो गया।");
@@ -89,15 +118,17 @@
                     throw new Error("No data found");
                 }
             } catch(e) { 
-                // Error aane par bhi system nahi rukega, local storage se kaam chalayega
+                clearTimeout(window.emergencyTimer);
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("actionButtons").style.display = "grid";
-                showToast("⚠️ क्लाउड कनेक्ट नहीं हुआ (ऑफ़लाइन)। आप फिर भी बैकअप ले सकते हैं।");
+                showToast("⚠️ क्लाउड कनेक्ट नहीं हुआ। आप फिर भी बैकअप ले सकते हैं।", true);
             }
         }
 
         async function syncToFirebaseCloud() {
             try {
+                if(!db) throw new Error("DB Error");
+                
                 document.getElementById("loading").style.display = "block";
                 document.getElementById("loading").innerHTML = "<i class='fa-solid fa-cloud-arrow-up fa-bounce mr-2'></i> डेटा क्लाउड पर सेव हो रहा है...";
                 document.getElementById("actionButtons").style.display = "none";
@@ -119,9 +150,9 @@
                 document.getElementById("actionButtons").style.display = "grid";
                 showToast("🎉 नया डेटा सफलतापूर्वक सेव हो गया! अब आप ऐप में वापस जा सकते हैं।");
             } catch(e) { 
-                showToast("❌ क्लाउड पर सेव करने में समस्या आई। इंटरनेट कनेक्शन चेक करें।");
                 document.getElementById("loading").style.display = "none";
                 document.getElementById("actionButtons").style.display = "grid";
+                showToast("❌ क्लाउड पर सेव करने में समस्या आई।", true);
             }
         }
         window.syncToFirebaseCloud = syncToFirebaseCloud;
@@ -195,14 +226,14 @@
                     localStorage.setItem("foundationCases", JSON.stringify(window.casesList));
 
                     // Sync Merged Data to Firebase Cloud
-                    window.syncToFirebaseCloud();
+                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
 
                 } catch(err){
-                    window.showToast("❌ बैकअप फाइल में गड़बड़ी है! कृपया सही JSON फाइल चुनें।");
+                    window.showToast("❌ बैकअप फाइल में गड़बड़ी है! कृपया सही JSON फाइल चुनें।", true);
                 }
             };
             r.readAsText(f);
-            e.target.value = ''; // Reset input to allow re-uploading the same file if needed
+            e.target.value = ''; // Reset input
         }
     </script>
 </body>
