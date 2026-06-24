@@ -16,19 +16,15 @@
     <div id="toast"></div>
 
     <div class="bg-white p-6 rounded-3xl shadow-xl w-full max-w-md text-center border border-gray-100">
-        <h1 class="text-xl font-bold text-green-800 mb-2"><i class="fa-solid fa-cloud"></i> सुरक्षित बैकअप और रीस्टोर</h1>
-        <p class="text-[11px] text-gray-500 mb-6 font-semibold">नया डेटा अपलोड करने पर आपका पुराना डेटा सुरक्षित रहेगा और नया डेटा उसमें जुड़ (Merge) जाएगा।</p>
+        <h1 class="text-xl font-bold text-green-800 mb-2"><i class="fa-solid fa-cloud"></i> डेटा बैकअप & रीस्टोर</h1>
+        <p class="text-[11px] text-gray-500 mb-6 font-semibold">आपका पुराना डेटा सुरक्षित रहेगा और नया डेटा उसमें जुड़ (Merge) जाएगा।</p>
         
-        <div id="loading" class="text-sm text-blue-600 font-bold mb-4 animate-pulse bg-blue-50 p-3 rounded-lg border border-blue-100">
-            <i class="fa-solid fa-spinner fa-spin mr-2"></i> क्लाउड से डेटा कनेक्ट हो रहा है...
-        </div>
-
-        <div class="grid grid-cols-1 gap-4" id="actionButtons" style="display:none;">
+        <div class="grid grid-cols-1 gap-4">
             <button onclick="exportBackup()" class="bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl text-sm font-bold shadow-md transition-all flex justify-center items-center gap-2">
-                <i class="fa-solid fa-file-export text-lg"></i> डेटा बैकअप (Download) करें
+                <i class="fa-solid fa-file-export text-lg"></i> Backup Save (डाउनलोड)
             </button>
             <label class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-2xl text-sm font-bold text-center cursor-pointer shadow-md transition-all flex justify-center items-center gap-2">
-                <i class="fa-solid fa-file-import text-lg"></i> नया डेटा रीस्टोर (Upload) करें
+                <i class="fa-solid fa-file-import text-lg"></i> Restore Data (अपलोड)
                 <input type="file" id="importFile" onchange="importBackup(event)" class="hidden" accept=".json">
             </label>
         </div>
@@ -36,25 +32,9 @@
         <button onclick="window.close()" class="mt-8 text-sm text-red-500 font-bold bg-red-50 hover:bg-red-100 transition px-4 py-2 rounded-lg">बंद करें / वापस जाएं</button>
     </div>
 
-    <script>
-        window.emergencyTimer = setTimeout(function() {
-            var loader = document.getElementById("loading");
-            if (loader && loader.style.display !== "none") {
-                loader.style.display = "none";
-                document.getElementById("actionButtons").style.display = "grid";
-                var t = document.getElementById("toast");
-                t.innerText = "⚠️ सर्वर रेस्पॉन्स नहीं दे रहा है। आप ऑफलाइन बैकअप/रीस्टोर कर सकते हैं।";
-                t.style.backgroundColor = "#b91c1c"; // Red warning color
-                t.classList.add("show");
-                setTimeout(function(){ t.classList.remove("show"); }, 4000);
-            }
-        }, 7000); // 7 second baad force open
-    </script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        // Yahan se persistent cache hata diya gaya hai taaki lock ki problem na aaye
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
@@ -66,174 +46,128 @@
             measurementId: "G-J6PPRSZ6P6" 
         };
         
-        let db;
         try {
             const app = initializeApp(firebaseConfig);
-            db = getFirestore(app); // Direct aur simple connection
-        } catch(err) {
-            console.error("Firebase init failed:", err);
-        }
+            const db = initializeFirestore(app, {
+              localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+            });
 
-        // Global Storage Variables
-        window.data = []; window.history = []; window.rationHistory = []; window.casesList = [];
+            window.syncToFirebaseCloud = async function() {
+                try {
+                    let currentData = JSON.parse(localStorage.getItem("data") || "[]");
+                    let currentHistory = JSON.parse(localStorage.getItem("history") || "[]");
+                    let currentRationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+                    let currentCases = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+                    let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
+                    let flashState = JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}');
 
-        function showToast(m, isError = false) { 
-            let t = document.getElementById("toast"); 
-            t.innerText = m; 
-            t.style.backgroundColor = isError ? "#b91c1c" : "#15803d";
-            t.classList.add("show"); 
-            setTimeout(() => t.classList.remove("show"), 3500); 
-        }
-        window.showToast = showToast;
-
-        async function loadFromFirebaseCloud() {
-            try {
-                if(!db) throw new Error("DB Error");
-
-                const fetchTask = getDoc(doc(db, "cloudAppData", "masterRecord"));
-                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 6000));
-                
-                let docSnap = await Promise.race([fetchTask, timeout]);
-
-                if (docSnap.exists()) {
-                    let cloudData = docSnap.data();
-                    window.data = cloudData.data || [];
-                    window.history = cloudData.history || [];
-                    window.rationHistory = cloudData.rationHistory || [];
-                    window.casesList = cloudData.foundationCases || [];
-                    
-                    localStorage.setItem("data", JSON.stringify(window.data));
-                    localStorage.setItem("history", JSON.stringify(window.history));
-                    localStorage.setItem("rationHistory", JSON.stringify(window.rationHistory));
-                    localStorage.setItem("foundationCases", JSON.stringify(window.casesList));
-                    
-                    if(cloudData.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(cloudData.adminLiveState));
-                    if(cloudData.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(cloudData.flashNoticeState));
-                    
-                    clearTimeout(window.emergencyTimer); // Success hone par emergency timer rok do
-                    document.getElementById("loading").style.display = "none";
-                    document.getElementById("actionButtons").style.display = "grid";
-                    showToast("✅ सिस्टम तैयार है! डेटा सिंक हो गया।");
-                } else {
-                    throw new Error("No data found");
-                }
-            } catch(e) { 
-                clearTimeout(window.emergencyTimer);
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("actionButtons").style.display = "grid";
-                showToast("⚠️ क्लाउड कनेक्ट नहीं हुआ। आप फिर भी बैकअप ले सकते हैं।", true);
+                    await setDoc(doc(db, "cloudAppData", "masterRecord"), {
+                        data: currentData,
+                        history: currentHistory,
+                        rationHistory: currentRationHistory,
+                        foundationCases: currentCases,
+                        adminLiveState: adminLiveState,
+                        flashNoticeState: flashState,
+                        lastUpdated: new Date().toISOString()
+                    });
+                    console.log("Firebase sync complete.");
+                } catch(e) { console.log("Firebase sync offline or failed."); }
             }
-        }
-
-        async function syncToFirebaseCloud() {
-            try {
-                if(!db) throw new Error("DB Error");
-                
-                document.getElementById("loading").style.display = "block";
-                document.getElementById("loading").innerHTML = "<i class='fa-solid fa-cloud-arrow-up fa-bounce mr-2'></i> डेटा क्लाउड पर सेव हो रहा है...";
-                document.getElementById("actionButtons").style.display = "none";
-                
-                let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
-                let flashState = JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}');
-
-                await setDoc(doc(db, "cloudAppData", "masterRecord"), {
-                    data: window.data,
-                    history: window.history,
-                    rationHistory: window.rationHistory,
-                    foundationCases: window.casesList,
-                    adminLiveState: adminLiveState,
-                    flashNoticeState: flashState,
-                    lastUpdated: new Date().toISOString()
-                });
-                
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("actionButtons").style.display = "grid";
-                showToast("🎉 नया डेटा सफलतापूर्वक सेव हो गया! अब आप ऐप में वापस जा सकते हैं।");
-            } catch(e) { 
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("actionButtons").style.display = "grid";
-                showToast("❌ क्लाउड पर सेव करने में समस्या आई।", true);
-            }
-        }
-        window.syncToFirebaseCloud = syncToFirebaseCloud;
-
-        window.onload = loadFromFirebaseCloud;
+        } catch(err) { console.log("Firebase init error."); }
     </script>
 
     <script>
-        // Backup Download Function
+        function showToast(m) { 
+            let t = document.getElementById("toast"); 
+            t.innerText = m; 
+            t.classList.add("show"); 
+            setTimeout(() => t.classList.remove("show"), 3000); 
+        }
+
+        // Load data from LocalStorage exactly like admin.html
+        let data = JSON.parse(localStorage.getItem("data") || "[]"); 
+        let history = JSON.parse(localStorage.getItem("history") || "[]"); 
+        let rationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+        let casesList = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+
+        function save() { 
+            localStorage.setItem("data", JSON.stringify(data)); 
+            localStorage.setItem("history", JSON.stringify(history)); 
+            localStorage.setItem("rationHistory", JSON.stringify(rationHistory)); 
+            localStorage.setItem("foundationCases", JSON.stringify(casesList)); 
+            if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
+        }
+
         function exportBackup() { 
             let backupData = { 
-                data: window.data || [], 
-                history: window.history || [], 
-                rationHistory: window.rationHistory || [], 
-                foundationCases: window.casesList || [],
+                data: data, 
+                history: history, 
+                rationHistory: rationHistory, 
+                foundationCases: casesList,
                 adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
                 flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
             };
             let blob = new Blob([JSON.stringify(backupData)], {type:"application/json"}); 
             let a = document.createElement("a"); 
             a.href = URL.createObjectURL(blob); 
-            a.download = "rahmat_foundation_backup.json"; 
+            a.download = "rahmat_backup.json"; 
             a.click(); 
-            window.showToast("✅ बैकअप फ़ाइल डाउनलोड हो गई!");
+            showToast("✅ Backup Save (Download) हो गया!");
         }
-        
-        // Restore Upload Function (Smart Merge Logic)
+
         function importBackup(e) {
             let f = e.target.files[0];
             if(!f) return;
+            showToast("⏳ डेटा रीस्टोर हो रहा है...");
             let r = new FileReader();
             r.onload = function(ev){
                 try {
                     let b = JSON.parse(ev.target.result);
 
-                    // 1. Merge Foundation Cases
+                    // 1. Merge Cases
                     let importedCases = b.foundationCases || [];
                     importedCases.forEach(ic => {
-                        let exists = window.casesList.find(c => c.id === ic.id);
-                        if(!exists) window.casesList.push(ic);
+                        let exists = casesList.find(c => c.id === ic.id);
+                        if(!exists) casesList.push(ic);
                     });
 
                     // 2. Merge Donation History
                     let importedHist = b.history || [];
                     importedHist.forEach(ih => {
-                        let exists = window.history.find(h => h.id === ih.id || (h.report === ih.report));
-                        if(!exists) window.history.push(ih);
+                        let exists = history.find(h => h.id === ih.id || (h.report === ih.report));
+                        if(!exists) history.push(ih);
                     });
-                    window.history.sort((a,b) => new Date(b.date) - new Date(a.date));
+                    history.sort((a,b) => new Date(b.date) - new Date(a.date));
 
                     // 3. Merge Ration History
                     let importedRat = b.rationHistory || [];
                     importedRat.forEach(ir => {
-                        let exists = window.rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
-                        if(!exists) window.rationHistory.push(ir);
+                        let exists = rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
+                        if(!exists) rationHistory.push(ir);
                     });
-                    window.rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
+                    rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-                    // 4. Update Current Month Data
+                    // 4. Merge Data 
                     let importedData = b.data || [];
-                    if(importedData.length > 0) window.data = importedData;
+                    if(importedData.length > 0) data = importedData;
 
-                    // 5. Restore Live State
-                    if(b.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
-                    if(b.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
+                    // 5. Merge Live State
+                    if(b.adminLiveState) {
+                        localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
+                    }
+                    if(b.flashNoticeState) {
+                        localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
+                    }
+
+                    save(); // Saves to local storage and syncs to cloud
                     
-                    // Save to Local Storage First
-                    localStorage.setItem("data", JSON.stringify(window.data));
-                    localStorage.setItem("history", JSON.stringify(window.history));
-                    localStorage.setItem("rationHistory", JSON.stringify(window.rationHistory));
-                    localStorage.setItem("foundationCases", JSON.stringify(window.casesList));
-
-                    // Sync Merged Data to Firebase Cloud
-                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
-
+                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Merge) हो गया! कोई पुराना डेटा डिलीट नहीं हुआ।");
                 } catch(err){
-                    window.showToast("❌ बैकअप फाइल में गड़बड़ी है! कृपया सही JSON फाइल चुनें।", true);
+                    showToast("❌ बैकअप फाइल में गड़बड़ी है");
                 }
             };
             r.readAsText(f);
-            e.target.value = ''; // Reset input
+            e.target.value = '';
         }
     </script>
 </body>
