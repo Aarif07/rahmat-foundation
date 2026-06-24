@@ -278,12 +278,12 @@
             </div>
 
             <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 mb-4">
-                <h3 class="font-bold text-sm mb-3">डेटा Management</h3>
-                <div class="grid grid-cols-2 gap-2">
-    <button onclick="exportBackupNative()" class="bg-yellow-500 text-white p-2.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-export"></i> Backup Save</button>
-    <button onclick="document.getElementById('importFile').click()" class="bg-green-600 text-white p-2.5 rounded-lg text-xs font-bold text-center"><i class="fa-solid fa-file-import"></i> Restore Data</button>
-    <input type="file" id="importFile" onchange="importBackup(event)" style="position:absolute; top:-1000px; opacity:0;">
-                </div>
+    <h3 class="font-bold text-sm mb-3"><i class="fa-solid fa-database text-blue-500"></i> डेटा Management</h3>
+    <div class="grid grid-cols-1 gap-2">
+        <button onclick="openExternalBackup()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 shadow-md transition-all">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Backup & Restore Manager खोलें
+        </button>
+    </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4 space-y-3">
@@ -314,22 +314,10 @@
     </nav>
 
     <script>
-function exportBackupNative() {
-    let backupData = {
-        data: data,
-        history: history,
-        rationHistory: rationHistory,
-        foundationCases: casesList,
-        adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
-        flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
-    };
-    
-    // Check if App is running in Sketchware APK Native Bridge
-    if (window.AndroidBridge) {
-        AndroidBridge.saveBackupFile(JSON.stringify(backupData));
-    } else {
-        exportBackup(); // Chrome browser fallback
-    }
+func<script>
+function openExternalBackup() {
+    var url = "intent://aarif07.github.io/rahmat-foundation/backup.html#Intent;scheme=https;action=android.intent.action.VIEW;end";
+    window.location.href = url;
 }
     </script>
 
