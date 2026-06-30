@@ -121,7 +121,7 @@
 
     <!-- App Logic Scripts (Combined) -->
     <script>
-        // PWA Service Worker Registration (Naya SW Link)
+        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('tool-sw.js')
@@ -311,6 +311,17 @@
                 return;
             }
 
+            // --- NAYA LOGIC: REPORT MEIN SE DATE RANGE NIKALNE KE LIYE ---
+            let fileName = "rahmat_imported_history.json";
+            
+            // Regex jo "17 मार्च से 5 अप्रैल" wala hissa scan karega
+            const rangeMatch = outputText.match(/\*(.*?)\s*तक आई इमदाद/);
+            
+            if (rangeMatch && rangeMatch[1]) {
+                let rangeText = rangeMatch[1].trim(); 
+                fileName = `Report_Backup_${rangeText}.json`; // e.g. Report_Backup_11 जनवरी से 10 फ़रवरी.json
+            }
+
             const backupData = {
                 history: [
                     {
@@ -326,11 +337,12 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "rahmat_imported_history.json");
+            downloadAnchorNode.setAttribute("download", fileName);
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
-            showToast("📥 JSON डाउनलोड शुरू हो गया!");
+            
+            showToast(`📥 ${fileName} डाउनलोड शुरू हो गया!`);
         }
     </script>
 </body>
