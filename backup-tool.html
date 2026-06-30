@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="hi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foundation Backup & Converter Tool</title>
+    
+    <!-- PWA Setup Tags (Naya Manifest Link) -->
+    <link rel="manifest" href="tool-manifest.json">
+    <meta name="theme-color" content="#16a34a">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        textarea { resize: none; }
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #15803d; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; opacity: 0; transition: 0.4s; z-index: 9999; text-align: center; width: 90%; max-width: 400px; font-weight: bold; }
+        #toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen">
+    
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
+    <div class="w-full max-w-5xl space-y-6">
+        
+        <!-- SECTION 1: BACKUP MANAGER TOOL -->
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 max-w-md mx-auto text-center">
+            <h1 class="text-xl font-bold text-green-800 mb-2"><i class="fa-solid fa-cloud"></i> डेटा बैकअप & रीस्टोर</h1>
+            <p class="text-[11px] text-gray-500 mb-6 font-semibold">आपका पुराना डेटा सुरक्षित रहेगा और नया डेटा उसमें जुड़ (Merge) जाएगा।</p>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <button onclick="exportBackup()" class="bg-amber-500 hover:bg-amber-600 text-white p-4 rounded-2xl text-sm font-bold shadow-md transition-all flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-export text-lg"></i> Backup Save (डाउनलोड)
+                </button>
+                <label class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-2xl text-sm font-bold text-center cursor-pointer shadow-md transition-all flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-import text-lg"></i> Restore Data (अपलोड)
+                    <input type="file" id="importFile" onchange="importBackup(event)" class="hidden" accept=".json">
+                </label>
+            </div>
+        </div>
+
+        <!-- SECTION 2: REPORT CONVERTER TOOL -->
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-green-700">रहमत-ए-इस्लाम - Old to New Report Converter</h1>
+                <p class="text-sm text-gray-500 mt-1">पुरानी टेक्स्ट रिपोर्ट डालें, उसे नए फॉर्मेट में बदलें, और JSON बैकअप डाउनलोड करें।</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Side: Old Report Input -->
+                <div class="space-y-2">
+                    <label class="font-semibold text-gray-700 text-sm">पुरानी रिपोर्ट यहाँ Paste करें (Old Format):</label>
+                    <textarea id="oldReportInput" class="w-full h-[450px] p-3 border border-gray-300 rounded-lg outline-none focus:border-green-500 text-sm bg-gray-50" placeholder="पुरानी रिपोर्ट का टेक्स्ट यहाँ पेस्ट करें..."></textarea>
+                    <button onclick="convertReport()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
+                        🔄 नए फॉर्मेट में Convert करें
+                    </button>
+                </div>
+
+                <!-- Right Side: New Format Output & Editor -->
+                <div class="space-y-2">
+                    <label class="font-semibold text-gray-700 text-sm">नया फॉर्मेट (कन्वर्ट होने के बाद यहाँ देखें और Edit करें):</label>
+                    <textarea id="newReportOutput" class="w-full h-[450px] p-3 border border-gray-300 rounded-lg outline-none focus:border-green-500 text-sm bg-green-50" placeholder="कन्वर्ट होने के बाद नया फॉर्मेट यहाँ दिखेगा। आप JSON बनाने से पहले इसमें मैन्युअल बदलाव कर सकते हैं..."></textarea>
+                    <button onclick="downloadJsonBackup()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
+                        📥 .JSON बैकअप फाइल डाउनलोड करें
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase Script (From Backup Manager) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCEDfTc2S-rt85yybINx0NVixeQkVczxOQ", 
+            authDomain: "rahmat-foundation.firebaseapp.com", 
+            projectId: "rahmat-foundation", 
+            storageBucket: "rahmat-foundation.firebasestorage.app", 
+            messagingSenderId: "1000128409503", 
+            appId: "1:1000128409503:web:94173d012d4aace1a7d7aa", 
+            measurementId: "G-J6PPRSZ6P6" 
+        };
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = initializeFirestore(app, {
+              localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+            });
+
+            window.syncToFirebaseCloud = async function() {
+                try {
+                    let currentData = JSON.parse(localStorage.getItem("data") || "[]");
+                    let currentHistory = JSON.parse(localStorage.getItem("history") || "[]");
+                    let currentRationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+                    let currentCases = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+                    let adminLiveState = JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}');
+                    let flashState = JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}');
+
+                    await setDoc(doc(db, "cloudAppData", "masterRecord"), {
+                        data: currentData,
+                        history: currentHistory,
+                        rationHistory: currentRationHistory,
+                        foundationCases: currentCases,
+                        adminLiveState: adminLiveState,
+                        flashNoticeState: flashState,
+                        lastUpdated: new Date().toISOString()
+                    });
+                    console.log("Firebase sync complete.");
+                } catch(e) { console.log("Firebase sync offline or failed."); }
+            }
+        } catch(err) { console.log("Firebase init error."); }
+    </script>
+
+    <!-- App Logic Scripts (Combined) -->
+    <script>
+        // PWA Service Worker Registration (Naya SW Link)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('tool-sw.js')
+                .then(reg => console.log("Tool Service Worker Registered!"))
+                .catch(err => console.log("SW Registration Failed:", err));
+            });
+        }
+
+        // ==========================================
+        // BACKUP MANAGER LOGIC
+        // ==========================================
+        function showToast(m) { 
+            let t = document.getElementById("toast"); 
+            t.innerText = m; 
+            t.classList.add("show"); 
+            setTimeout(() => t.classList.remove("show"), 3000); 
+        }
+
+        let data = JSON.parse(localStorage.getItem("data") || "[]"); 
+        let history = JSON.parse(localStorage.getItem("history") || "[]"); 
+        let rationHistory = JSON.parse(localStorage.getItem("rationHistory") || "[]");
+        let casesList = JSON.parse(localStorage.getItem("foundationCases") || "[]");
+
+        function save() { 
+            localStorage.setItem("data", JSON.stringify(data)); 
+            localStorage.setItem("history", JSON.stringify(history)); 
+            localStorage.setItem("rationHistory", JSON.stringify(rationHistory)); 
+            localStorage.setItem("foundationCases", JSON.stringify(casesList)); 
+            if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
+        }
+
+        function exportBackup() { 
+            let backupData = { 
+                data: data, 
+                history: history, 
+                rationHistory: rationHistory, 
+                foundationCases: casesList,
+                adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
+                flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
+            };
+            let blob = new Blob([JSON.stringify(backupData)], {type:"application/json"}); 
+            let a = document.createElement("a"); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = "rahmat_backup.json"; 
+            a.click(); 
+            showToast("✅ Backup Save (Download) हो गया!");
+        }
+
+        function importBackup(e) {
+            let f = e.target.files[0];
+            if(!f) return;
+            showToast("⏳ डेटा रीस्टोर हो रहा है...");
+            let r = new FileReader();
+            r.onload = function(ev){
+                try {
+                    let b = JSON.parse(ev.target.result);
+
+                    let importedCases = b.foundationCases || [];
+                    importedCases.forEach(ic => {
+                        let exists = casesList.find(c => c.id === ic.id);
+                        if(!exists) casesList.push(ic);
+                    });
+
+                    let importedHist = b.history || [];
+                    importedHist.forEach(ih => {
+                        let exists = history.find(h => h.id === ih.id || (h.report === ih.report));
+                        if(!exists) history.push(ih);
+                    });
+                    history.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    let importedRat = b.rationHistory || [];
+                    importedRat.forEach(ir => {
+                        let exists = rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
+                        if(!exists) rationHistory.push(ir);
+                    });
+                    rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                    let importedData = b.data || [];
+                    if(importedData.length > 0) data = importedData;
+
+                    if(b.adminLiveState) localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
+                    if(b.flashNoticeState) localStorage.setItem("flashNoticeState", JSON.stringify(b.flashNoticeState));
+
+                    save(); 
+                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Merge) हो गया!");
+                } catch(err){
+                    showToast("❌ बैकअप फाइल में गड़बड़ी है");
+                }
+            };
+            r.readAsText(f);
+            e.target.value = '';
+        }
+
+        // ==========================================
+        // REPORT CONVERTER LOGIC
+        // ==========================================
+        function formatHindiDate(dateStr) {
+            const parts = dateStr.split('/');
+            if (parts.length >= 2) {
+                const day = parseInt(parts[0], 10);
+                const monthIndex = parseInt(parts[1], 10) - 1;
+                const months = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+                
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    return `${day} ${months[monthIndex]}`;
+                }
+            }
+            return dateStr;
+        }
+
+        function convertReport() {
+            const oldText = document.getElementById('oldReportInput').value;
+            if (!oldText.trim()) {
+                alert("कृपया पहले पुरानी रिपोर्ट का टेक्स्ट डालें।");
+                return;
+            }
+
+            let newText = "";
+            let month = "तय नहीं";
+            let displayRange = "";
+            let endDateText = "तय तिथि";
+            
+            const monthMatch = oldText.match(/\*महीना\s*-\s*(.*?)\*/);
+            if (monthMatch) month = monthMatch[1].trim();
+
+            const dateRegex = /([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4})\s*से\s*([0-9]{1,2}\/[0-9]{1,2}\/[0-9]{2,4})/;
+            const dateMatch = oldText.match(dateRegex);
+
+            if (dateMatch) {
+                let startDate = formatHindiDate(dateMatch[1].trim());
+                endDateText = formatHindiDate(dateMatch[2].trim());
+                displayRange = `${startDate} से ${endDateText}`;
+            } else {
+                const textRangeMatch = oldText.match(/\*(.*?\s*से\s*.*?)(\s*तक)?.*?\*/);
+                if (textRangeMatch) {
+                    displayRange = textRangeMatch[1].trim();
+                    let parts = displayRange.split('से');
+                    if(parts.length > 1) endDateText = parts[1].trim();
+                }
+            }
+
+            newText += `*रहमत-ए-इस्लाम फाउंडेशन*\n_मदद अल्लाह की तरफ़ से_\n*(लंकापुरी शास्त्री नगर जयपुर)*\n\n`;
+            newText += `*\`महीना - ${month}\`*\n`;
+            newText += `*${displayRange} तक आई इमदाद जिसकी डिटेल यहाँ आपके साथ शेयर कर रहा हूं .*\n\n`;
+
+            const entryRegex = /(?:\d+\.)?\s*(\d+)\s*₹\s+(.*)/g;
+            let match;
+            let entries = [];
+            let totalImdad = 0;
+
+            while ((match = entryRegex.exec(oldText)) !== null) {
+                let amount = parseInt(match[1]);
+                let details = match[2].trim(); 
+                entries.push(`${amount} ₹ ${details}`);
+                totalImdad += amount;
+            }
+
+            if(entries.length > 0) {
+                newText += `सभी जमा एंट्रीज... ${totalImdad}\n`;
+                newText += entries.join("\n") + "\n\n";
+            }
+
+            let totalJamaMatch = oldText.match(/कुल इमदाद जमा हुई\s*[-=]?\s*([\d,]+)/);
+            let totalKharchaMatch = oldText.match(/कुल खर्चा हुआ\s*[-=]?\s*([\d,]+)/);
+            let bacheMatch = oldText.match(/कुल बचे\s*[-=]?\s*([\d,]+)/);
+
+            let totalJama = totalJamaMatch ? totalJamaMatch[1] : totalImdad;
+            let totalKharcha = totalKharchaMatch ? totalKharchaMatch[1] : "0";
+            let totalBache = bacheMatch ? bacheMatch[1] : totalJama;
+
+            newText += `━━━━━━━━━━━━━━━━━\n`;
+            newText += `*${endDateText} तक जमा रक़म = ${totalJama}/-*\n`;
+            newText += `*पिछले महीने तक जमा बची रक़म = 0/-*\n\n`; 
+            newText += `*अल्हम्दुलिल्लाह*\n`;
+            newText += `*${endDateText} तक सब मिलाकर जमा रक़म = ${totalJama}/-*\n`;
+            newText += `*इस महीने मे राशन का कुल खर्च हुआ = ${totalKharcha}/-*\n`;
+            newText += `*${endDateText} तक कुल बची रक़म = ${totalBache}/-*\n\n`;
+            newText += `*अल्लाह 'रहमत ए इस्लाम फाउंडेशन' परिवार के सभी साथियों की हिफाज़त फरमाये। उनके कारोबार में तरक्की अता करें और उन्हें हर मुसीबत से मेहफूज रखे। अल्लाह 'रहमत ए इस्लाम फाउंडेशन' के सभी साथियों को इस नेक काम के बदले बेहतर इनामात से नवाज़े। अल्लाह हम सब को ऐसे ही इस नेक काम में लगाये रखे। आमीन.*`;
+
+            document.getElementById('newReportOutput').value = newText;
+        }
+
+        function downloadJsonBackup() {
+            const outputText = document.getElementById('newReportOutput').value;
+            if (!outputText.trim()) {
+                alert("डाउनलोड करने के लिए कोई नया फॉर्मेट मौजूद नहीं है।");
+                return;
+            }
+
+            const backupData = {
+                history: [
+                    {
+                        id: "report_" + Date.now(),
+                        date: new Date().toLocaleString("hi-IN"),
+                        month: "Old Imported Data",
+                        range: "Imported",
+                        report: outputText
+                    }
+                ]
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "rahmat_imported_history.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast("📥 JSON डाउनलोड शुरू हो गया!");
+        }
+    </script>
+</body>
+</html>
