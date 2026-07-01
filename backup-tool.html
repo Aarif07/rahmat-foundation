@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foundation Backup & Converter Tool</title>
     
-    <!-- PWA Setup Tags (Naya Manifest Link) -->
+    <!-- PWA Setup Tags -->
     <link rel="manifest" href="tool-manifest.json">
     <meta name="theme-color" content="#16a34a">
     <link rel="apple-touch-icon" href="logo.png">
@@ -44,31 +44,44 @@
             </div>
         </div>
 
-        <!-- SECTION 2: REPORT CONVERTER TOOL -->
+        <!-- SECTION 2: REPORT CONVERTER TOOL (DONATION) -->
         <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full">
             <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold text-green-700">रहमत-ए-इस्लाम - Old to New Report Converter</h1>
-                <p class="text-sm text-gray-500 mt-1">पुरानी टेक्स्ट रिपोर्ट डालें, उसे नए फॉर्मेट में बदलें, और JSON बैकअप डाउनलोड करें।</p>
+                <h1 class="text-2xl font-bold text-green-700">इमदाद - Old to New Report Converter</h1>
+                <p class="text-sm text-gray-500 mt-1">पुरानी इमदाद टेक्स्ट रिपोर्ट डालें, उसे नए फॉर्मेट में बदलें, और JSON बैकअप डाउनलोड करें।</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Left Side: Old Report Input -->
                 <div class="space-y-2">
                     <label class="font-semibold text-gray-700 text-sm">पुरानी रिपोर्ट यहाँ Paste करें (Old Format):</label>
-                    <textarea id="oldReportInput" class="w-full h-[450px] p-3 border border-gray-300 rounded-lg outline-none focus:border-green-500 text-sm bg-gray-50" placeholder="पुरानी रिपोर्ट का टेक्स्ट यहाँ पेस्ट करें..."></textarea>
+                    <textarea id="oldReportInput" class="w-full h-[450px] p-3 border border-gray-300 rounded-lg outline-none focus:border-green-500 text-sm bg-gray-50" placeholder="पुरानी इमदाद रिपोर्ट का टेक्स्ट यहाँ पेस्ट करें..."></textarea>
                     <button onclick="convertReport()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
                         🔄 नए फॉर्मेट में Convert करें
                     </button>
                 </div>
 
-                <!-- Right Side: New Format Output & Editor -->
                 <div class="space-y-2">
                     <label class="font-semibold text-gray-700 text-sm">नया फॉर्मेट (कन्वर्ट होने के बाद यहाँ देखें और Edit करें):</label>
                     <textarea id="newReportOutput" class="w-full h-[450px] p-3 border border-gray-300 rounded-lg outline-none focus:border-green-500 text-sm bg-green-50" placeholder="कन्वर्ट होने के बाद नया फॉर्मेट यहाँ दिखेगा। आप JSON बनाने से पहले इसमें मैन्युअल बदलाव कर सकते हैं..."></textarea>
                     <button onclick="downloadJsonBackup()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
-                        📥 .JSON बैकअप फाइल डाउनलोड करें
+                        📥 इमदाद .JSON बैकअप फाइल डाउनलोड करें
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: RATION REPORT BACKUP (NEW ADDITION) -->
+        <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 w-full">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-orange-600">राशन रिपोर्ट JSON बैकअप</h1>
+                <p class="text-sm text-gray-500 mt-1">अपनी राशन रिपोर्ट यहाँ पेस्ट करें, ज़रूरत हो तो एडिट करें और सीधे JSON बैकअप डाउनलोड करें। (कोई ऑटोमैटिक बदलाव नहीं)</p>
+            </div>
+
+            <div class="space-y-4 max-w-3xl mx-auto">
+                <textarea id="rationReportInput" class="w-full h-[350px] p-3 border border-gray-300 rounded-lg outline-none focus:border-orange-500 text-sm bg-orange-50" placeholder="राशन रिपोर्ट का टेक्स्ट यहाँ पेस्ट करें और चेक कर लें..."></textarea>
+                <button onclick="downloadRationJsonBackup()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition-all shadow-md">
+                    📥 राशन .JSON बैकअप फाइल डाउनलोड करें
+                </button>
             </div>
         </div>
 
@@ -216,7 +229,7 @@
         }
 
         // ==========================================
-        // REPORT CONVERTER LOGIC
+        // REPORT CONVERTER LOGIC (DONATION)
         // ==========================================
         function formatHindiDate(dateStr) {
             const parts = dateStr.split('/');
@@ -311,15 +324,12 @@
                 return;
             }
 
-            // --- NAYA LOGIC: REPORT MEIN SE DATE RANGE NIKALNE KE LIYE ---
-            let fileName = "rahmat_imported_history.json";
-            
-            // Regex jo "17 मार्च से 5 अप्रैल" wala hissa scan karega
+            let fileName = "Imdad_History_Imported.json";
             const rangeMatch = outputText.match(/\*(.*?)\s*तक आई इमदाद/);
             
             if (rangeMatch && rangeMatch[1]) {
                 let rangeText = rangeMatch[1].trim(); 
-                fileName = `Report_Backup_${rangeText}.json`; // e.g. Report_Backup_11 जनवरी से 10 फ़रवरी.json
+                fileName = `Report_Backup_${rangeText}.json`; 
             }
 
             const backupData = {
@@ -329,6 +339,47 @@
                         date: new Date().toLocaleString("hi-IN"),
                         month: "Old Imported Data",
                         range: "Imported",
+                        report: outputText
+                    }
+                ]
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", fileName);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            
+            showToast(`📥 ${fileName} डाउनलोड शुरू हो गया!`);
+        }
+
+        // ==========================================
+        // RATION REPORT BACKUP LOGIC (NEW ADDITION)
+        // ==========================================
+        function downloadRationJsonBackup() {
+            const outputText = document.getElementById('rationReportInput').value;
+            if (!outputText.trim()) {
+                alert("कृपया पहले राशन रिपोर्ट का टेक्स्ट डालें।");
+                return;
+            }
+
+            // Extract Date for File Name (looks for a format like 20/06/26 or 20-06-2026)
+            let fileName = "Ration_Backup_Manual.json";
+            const dateMatch = outputText.match(/([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{2,4})/);
+            
+            if (dateMatch && dateMatch[1]) {
+                let dateText = dateMatch[1].replace(/\//g, '-'); 
+                fileName = `Ration_Backup_${dateText}.json`;
+            }
+
+            // Build exact Ration History JSON structure
+            const backupData = {
+                rationHistory: [
+                    {
+                        id: "ration_" + Date.now(),
+                        date: new Date().toLocaleString("hi-IN"),
                         report: outputText
                     }
                 ]
