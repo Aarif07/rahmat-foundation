@@ -13,15 +13,11 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').then(reg => {
-        // 1. Force server check on every load
         reg.update();
-        
-        // 2. Naya update aate hi automatic detect karna
         reg.onupdatefound = () => {
           const installingWorker = reg.installing;
           installingWorker.onstatechange = () => {
             if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // 3. Jaise hi GitHub par naya code aayega, App automatic cache clear karke refresh ho jayega
               console.log('Naya Update Aa Gaya Hai! Auto-Refreshing...');
               window.location.reload(true);
             }
@@ -275,14 +271,6 @@
                 <button onclick="shareAdminApp()" class="w-full mt-2 bg-[#25D366] hover:bg-[#1DA851] text-white p-2.5 rounded-lg text-xs font-bold flex justify-center items-center gap-2 shadow-xs transition">
                     <i class="fa-brands fa-whatsapp text-sm"></i> व्हाट्सएप पर ऐप link share करें
                 </button>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl border dark:border-gray-700 mb-4">
-                <h3 class="font-bold text-sm mb-3">डेटा Management</h3>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="exportBackup()" class="bg-yellow-500 text-white p-2.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-file-export"></i> Backup Save</button>
-                    <label class="bg-green-600 text-white p-2.5 rounded-lg text-xs font-bold text-center cursor-pointer"><i class="fa-solid fa-file-import"></i> Restore Data<input type="file" id="importFile" onchange="importBackup(event)" class="hidden"></label>
-                </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mb-4 space-y-3">
@@ -1251,82 +1239,6 @@ ${kitItems}
             themeIcon.className = document.documentElement.classList.contains('dark') ? "fa-solid fa-sun text-lg text-yellow-400" : "fa-solid fa-moon text-lg";
         }
         
-        function exportBackup() { 
-            let backupData = { 
-                data: data, 
-                history: history, 
-                rationHistory: rationHistory, 
-                foundationCases: casesList,
-                adminLiveState: JSON.parse(localStorage.getItem("adminLiveState") || '{"prev":0,"expense":0}'),
-                flashNoticeState: JSON.parse(localStorage.getItem("flashNoticeState") || '{"visible":false,"message":""}')
-            };
-            let blob = new Blob([JSON.stringify(backupData)], {type:"application/json"}); 
-            let a = document.createElement("a"); 
-            a.href = URL.createObjectURL(blob); 
-            a.download = "rahmat_backup.json"; 
-            a.click(); 
-        }
-        
-        // --- SMART MERGE LOGIC ---
-        function importBackup(e) {
-            let f = e.target.files[0];
-            if(!f) return;
-            let r = new FileReader();
-            r.onload = function(ev){
-                try {
-                    let b = JSON.parse(ev.target.result);
-
-                    // 1. Merge Cases (Purane cases delete nahi honge)
-                    let importedCases = b.foundationCases || [];
-                    importedCases.forEach(ic => {
-                        let exists = casesList.find(c => c.id === ic.id);
-                        if(!exists) casesList.push(ic);
-                    });
-
-                    // 2. Merge Donation History
-                    let importedHist = b.history || [];
-                    importedHist.forEach(ih => {
-                        let exists = history.find(h => h.id === ih.id || (h.report === ih.report));
-                        if(!exists) history.push(ih);
-                    });
-                    history.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-                    // 3. Merge Ration History
-                    let importedRat = b.rationHistory || [];
-                    importedRat.forEach(ir => {
-                        let exists = rationHistory.find(r => r.id === ir.id || (r.report === ir.report));
-                        if(!exists) rationHistory.push(ir);
-                    });
-                    rationHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-                    // 4. Merge Data (Current month entries)
-                    let importedData = b.data || [];
-                    if(importedData.length > 0) data = importedData;
-
-                    // 5. Merge Live State
-                    if(b.adminLiveState) {
-                        localStorage.setItem("adminLiveState", JSON.stringify(b.adminLiveState));
-                        if(document.getElementById("prev")) document.getElementById("prev").value = b.adminLiveState.prev || 0;
-                        if(document.getElementById("expense")) document.getElementById("expense").value = b.adminLiveState.expense || 0;
-                    }
-
-                    save();
-                    if(window.syncToFirebaseCloud) window.syncToFirebaseCloud();
-
-                    renderPreview();
-                    renderCasesList();
-                    updateReportPreview();
-                    if(typeof renderHistory === 'function') renderHistory();
-
-                    showToast("✅ डेटा सफलतापूर्वक रीस्टोर (Merge) हो गया! कोई पुराना डेटा डिलीट नहीं हुआ।");
-                } catch(err){
-                    showToast("❌ बैकअप फाइल में गड़बड़ी है");
-                }
-            };
-            r.readAsText(f);
-            e.target.value = '';
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             renderPreview();
             renderCasesList();

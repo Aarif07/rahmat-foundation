@@ -17,15 +17,11 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('sw.js').then(reg => {
-            // 1. Force server check on every load
             reg.update();
-            
-            // 2. Naya update aate hi automatic detect karna
             reg.onupdatefound = () => {
               const installingWorker = reg.installing;
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // 3. Jaise hi GitHub par naya code aayega, App automatic cache clear karke refresh ho jayega
                   console.log('Naya Update Aa Gaya Hai! Auto-Refreshing...');
                   window.location.reload(true);
                 }
